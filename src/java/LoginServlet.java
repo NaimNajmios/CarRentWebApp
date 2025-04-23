@@ -3,19 +3,22 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
  */
 
+import Database.DBOperation;
+import User.User;
 import java.io.IOException;
 import java.io.PrintWriter;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 /**
  *
  * @author Naim Najmi
  */
-public class LogoutServlet extends HttpServlet {
+public class LoginServlet extends HttpServlet {
+
+    DBOperation db = new DBOperation();
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -29,17 +32,28 @@ public class LogoutServlet extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // Get the current session, if it exists
-        HttpSession session = request.getSession(false);
+        // Handles login form submission
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
 
-        // Log out the user by invalidating the session
-        if (session != null) {
-            session.invalidate();
-            System.out.println("User logged out.");
+        if (db.validateUser(username, password)) {
+            // Login successful, redirect to home page
+            User user = db.getUser(username);
+            // Set session attributes object
+            request.getSession().setAttribute("user", user);
+            
+            // Check if user is admin or client
+            if (user.getRole().equals("Administrator")) {
+                response.sendRedirect("admin/user-management.jsp");
+            } else {
+                response.sendRedirect("clientHome.jsp");
+            }
+
+        } else {
+            // Login failed, redirect to login page with error message
+            System.out.println("Login failed!");
+            response.sendRedirect("login.html?error=true");
         }
-
-        // Redirect to the login page and passed 'logout'
-        response.sendRedirect("index.jsp?div_message=logout");
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">

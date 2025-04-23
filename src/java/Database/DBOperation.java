@@ -6,7 +6,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import javax.servlet.http.HttpSession;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public class DBOperation {
 
@@ -26,14 +27,16 @@ public class DBOperation {
         this.db.printDBDetails();
     }
 
-    // Method to validate user login credentials
-    public boolean validateUser(String username, String password) {
+    public boolean validateUser(String username, String password) throws NoSuchAlgorithmException {
         Connection connection = null;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
         boolean isValid = false;
 
         try {
+            // Hash the plain password using SHA-256
+            String hashedPassword = hashPasswordSHA256(password);
+
             // Get database connection
             connection = DatabaseConnection.getConnection();
 
@@ -41,7 +44,7 @@ public class DBOperation {
             String sql = "SELECT * FROM user WHERE username = ? AND password = ?";
             preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setString(1, username);
-            preparedStatement.setString(2, password);
+            preparedStatement.setString(2, hashedPassword);
 
             // Execute the query
             resultSet = preparedStatement.executeQuery();
@@ -76,124 +79,113 @@ public class DBOperation {
 
     public boolean registerUser(String username, String plainPassword, String email,
             String fullName, String address, String phoneNumber)
-            throws SQLException, Exception { // Declare specific exceptions
+            throws SQLException, Exception {
 
         Connection connection = null;
         boolean registrationSuccess = false;
-        long newUserId = -1; // To store the generated userID from the 'user' table insert
+        long newUserId = -1;
 
-        // SQL statements (adjust table and column names as needed)
         String sqlCheckUser = "SELECT userID FROM user WHERE username = ?";
         String sqlInsertUser = "INSERT INTO user (username, password, role) VALUES (?, ?, ?)";
-        // Ensure client table columns match: userID (FK), username, address,
-        // phonenumber, email, fullname
         String sqlInsertClient = "INSERT INTO client (userID, name, address, phonenumber, email) VALUES (?, ?, ?, ?, ?)";
 
         try {
             connection = DatabaseConnection.getConnection();
-            // *** Start Transaction ***
             connection.setAutoCommit(false);
 
-            // 1. Check if username already exists
             try (PreparedStatement psCheck = connection.prepareStatement(sqlCheckUser)) {
                 psCheck.setString(1, username);
                 try (ResultSet rs = psCheck.executeQuery()) {
                     if (rs.next()) {
-                        // Username exists - rollback (though nothing done yet) and return false
                         connection.rollback();
                         System.out.println("Username '" + username + "' already exists.");
-                        return false; // Indicate username is taken
+                        return false;
                     }
                 }
             }
 
-            // 3. Insert into 'user' table
+            // 🔐 Hash the plain password using SHA-256
+            String hashedPassword = hashPasswordSHA256(plainPassword);
+
             try (PreparedStatement psUser = connection.prepareStatement(sqlInsertUser,
                     PreparedStatement.RETURN_GENERATED_KEYS)) {
                 psUser.setString(1, username);
-                psUser.setString(2, plainPassword);
-                psUser.setString(3, "Client"); // Set role explicitly
+                psUser.setString(2, hashedPassword); // Store hashed password
+                psUser.setString(3, "Client");
 
                 int userRowsAffected = psUser.executeUpdate();
-
                 if (userRowsAffected == 0) {
                     throw new SQLException("Creating user failed, no rows affected.");
                 }
 
-                // Retrieve the generated userID
                 try (ResultSet generatedKeys = psUser.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
-                        newUserId = generatedKeys.getLong(1); // Assuming userID is the first generated key (long)
+                        newUserId = generatedKeys.getLong(1);
                     } else {
                         throw new SQLException("Creating user failed, no ID obtained.");
                     }
                 }
             }
 
-            // 4. Insert into 'client' table using the obtained userID
             if (newUserId <= 0) {
                 throw new SQLException("Failed to get valid userID after user insert.");
             }
 
             try (PreparedStatement psClient = connection.prepareStatement(sqlInsertClient)) {
-                psClient.setLong(1, newUserId); // The userID obtained from user insert
-                psClient.setString(2, fullName); // Username (can be useful in client table too)
+                psClient.setLong(1, newUserId);
+                psClient.setString(2, fullName);
                 psClient.setString(3, address);
                 psClient.setString(4, phoneNumber);
                 psClient.setString(5, email);
 
                 int clientRowsAffected = psClient.executeUpdate();
-
                 if (clientRowsAffected == 0) {
                     throw new SQLException("Creating client details failed, no rows affected.");
                 }
             }
 
-            // *** Commit Transaction ***
             connection.commit();
             registrationSuccess = true;
             System.out.println("User '" + username + "' registered successfully with userID: " + newUserId);
 
         } catch (SQLException | ClassNotFoundException e) {
-            // Log the error server-side
             System.err.println("Database error during registration for user " + username + ": " + e.getMessage());
-            e.printStackTrace(); // For detailed debugging logs
-            if (connection != null) {
-                try {
-                    System.err.println("Rolling back transaction due to error.");
-                    connection.rollback(); // *** Rollback Transaction ***
-                } catch (SQLException ex) {
-                    System.err.println("Rollback failed: " + ex.getMessage());
-                    ex.printStackTrace(); // Log rollback failure too
-                }
-            }
-            // Re-throw SQLException so the servlet can handle DB errors
-            if (e instanceof SQLException)
-                throw (SQLException) e;
-            if (e instanceof ClassNotFoundException)
-                throw new SQLException("Database Driver Error", e);
-            // Fallback for other caught exceptions (like from hashing)
-            throw new Exception("Registration failed due to an unexpected error.", e);
-
-        } catch (Exception e) { // Catch potential hashing errors
-            System.err.println("Non-DB error during registration for user " + username + ": " + e.getMessage());
             e.printStackTrace();
             if (connection != null) {
                 try {
-                    System.err.println("Rolling back transaction due to non-DB error.");
-                    connection.rollback(); // *** Rollback Transaction ***
+                    System.err.println("Rolling back transaction due to error.");
+                    connection.rollback();
                 } catch (SQLException ex) {
                     System.err.println("Rollback failed: " + ex.getMessage());
                     ex.printStackTrace();
                 }
             }
-            // Re-throw the exception
+            if (e instanceof SQLException) {
+                throw (SQLException) e;
+            }
+            if (e instanceof ClassNotFoundException) {
+                throw new SQLException("Database Driver Error", e);
+            }
+            throw new Exception("Registration failed due to an unexpected error.", e);
+
+        } catch (Exception e) {
+            System.err.println("Non-DB error during registration for user " + username + ": " + e.getMessage());
+            e.printStackTrace();
+            if (connection != null) {
+                try {
+                    System.err.println("Rolling back transaction due to non-DB error.");
+                    connection.rollback();
+                } catch (SQLException ex) {
+                    System.err.println("Rollback failed: " + ex.getMessage());
+                    ex.printStackTrace();
+                }
+            }
             throw e;
         } finally {
             if (connection != null) {
                 try {
-                    connection.setAutoCommit(true); // Restore default mode
-                    DatabaseConnection.closeConnection(connection); // Close/return connection to pool
+                    connection.setAutoCommit(true);
+                    DatabaseConnection.closeConnection(connection);
                 } catch (SQLException e) {
                     System.err.println("Error closing connection/resetting autoCommit: " + e.getMessage());
                     e.printStackTrace();
@@ -202,6 +194,17 @@ public class DBOperation {
         }
 
         return registrationSuccess;
+    }
+
+// Helper method to hash a password with SHA-256
+    private String hashPasswordSHA256(String password) throws NoSuchAlgorithmException {
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        byte[] hashBytes = md.digest(password.getBytes());
+        StringBuilder sb = new StringBuilder();
+        for (byte b : hashBytes) {
+            sb.append(String.format("%02x", b));
+        }
+        return sb.toString();
     }
 
     // Get user information by username
