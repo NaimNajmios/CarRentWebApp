@@ -16,6 +16,10 @@
         <servlet-name>DeleteAdminServlet</servlet-name>
         <servlet-class>DeleteAdminServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>LogoutServlet</servlet-name>
+        <servlet-class>LogoutServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>UpdateClientServlet</servlet-name>
         <url-pattern>/UpdateClient</url-pattern>
@@ -31,6 +35,10 @@
     <servlet-mapping>
         <servlet-name>DeleteAdminServlet</servlet-name>
         <url-pattern>/DeleteAdmin</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>LogoutServlet</servlet-name>
+        <url-pattern>/Logout</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

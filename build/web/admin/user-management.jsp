@@ -32,7 +32,7 @@
                             </div>
                         </div>
                         <div class="col-6 col-md-9 text-right">
-                            <a href="Logout" class="btn btn-light">Logout</a>
+                            <a href="<%= request.getContextPath()%>/Logout" class="btn btn-light">Logout</a>
                         </div>
                     </div>
                 </div>
@@ -136,7 +136,7 @@
                                                         <a href="viewAdminDetails.jsp?userID=<%= admin.getAdminID()%>" class="btn btn-sm btn-info">View</a>
                                                         <a href="editAdminForm.jsp?userID=<%= admin.getAdminID()%>" class="btn btn-sm btn-warning">Edit</a>
                                                         <br><br>
-                                                        <form action="<%= request.getContextPath()%>/DeleteAdmin" method="post" onsubmit="return confirmDelete();">
+                                                        <form action="" method="post" onsubmit="return confirm('Are you sure you want to delete this user?');">
                                                             <input type="hidden" name="adminID" value="<%= admin.getAdminID()%>">
                                                             <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                                                         </form>
