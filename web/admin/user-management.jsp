@@ -15,7 +15,7 @@
         <!-- Google Fonts -->
         <link href="https://fonts.googleapis.com/css?family=DM+Sans:300,400,700&display=swap" rel="stylesheet">
 
-    <%-- Include start here --%>
+        <%-- Include start here --%>
 
         <!-- Fixed Paths for CSS -->
         <%@ include file="../include/admin-styling.html" %>
@@ -41,7 +41,7 @@
             <div class="container-fluid">
                 <div class="row">
                     <%@ include file="../include/sidebar.jsp" %>
-    <%-- Include end here --%>
+                    <%-- Include end here --%>
                     <main class="col-md-9 ms-sm-auto col-lg-10 content">
                         <div class="card">
                             <div class="card-header d-flex justify-content-between align-items-center">
@@ -88,10 +88,10 @@
                                                         <a href="viewUserDetails.jsp?userID=<%= client.getClientID()%>" class="btn btn-sm btn-info">View</a>
                                                         <a href="editUserForm.jsp?userID=<%= client.getClientID()%>" class="btn btn-sm btn-warning">Edit</a>
                                                         <br><br>
-                                                        <form action="DeleteClientServlet" method="post" onsubmit="return confirm('Are you sure you want to delete this user?');">
+                                                        <form action="<%= request.getContextPath()%>/DeleteClient" method="post" onsubmit="return confirmDelete();">
                                                             <input type="hidden" name="clientID" value="<%= client.getClientID()%>">
                                                             <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                                                        </form>
+                                                        </form>                                                        </form>
                                                     </td>
                                                 </tr>
                                                 <%

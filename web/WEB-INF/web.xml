@@ -8,6 +8,14 @@
         <servlet-name>UpdateAdminServlet</servlet-name>
         <servlet-class>UpdateAdminServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>DeleteClientServlet</servlet-name>
+        <servlet-class>DeleteClientServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>DeleteAdminServlet</servlet-name>
+        <servlet-class>DeleteAdminServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>UpdateClientServlet</servlet-name>
         <url-pattern>/UpdateClient</url-pattern>
@@ -15,6 +23,14 @@
     <servlet-mapping>
         <servlet-name>UpdateAdminServlet</servlet-name>
         <url-pattern>/UpdateAdmin</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>DeleteClientServlet</servlet-name>
+        <url-pattern>/DeleteClient</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>DeleteAdminServlet</servlet-name>
+        <url-pattern>/DeleteAdmin</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

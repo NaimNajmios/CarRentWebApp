@@ -24,6 +24,9 @@ public class AdminOperation {
     private User user;
     private Client client;
     private Admin admin;
+    Connection connection = null;
+    PreparedStatement preparedStatement = null;
+    ResultSet resultSet = null;
 
     // Database connection
     private DatabaseConnection db = new DatabaseConnection();
@@ -61,7 +64,7 @@ public class AdminOperation {
             connection = DatabaseConnection.getConnection();
 
             // SQL query to retrieve all client level users
-            String sql = "SELECT * FROM client;";
+            String sql = "SELECT * FROM client WHERE isDeleted = FALSE;";
             preparedStatement = connection.prepareStatement(sql);
 
             // Execute the query
@@ -108,7 +111,7 @@ public class AdminOperation {
             connection = DatabaseConnection.getConnection();
 
             // SQL query to retrieve all admin level users
-            String sql = "SELECT * FROM administrator;";
+            String sql = "SELECT * FROM administrator WHERE isDeleted = FALSE;";
             preparedStatement = connection.prepareStatement(sql);
 
             // Execute the query
@@ -355,7 +358,7 @@ public class AdminOperation {
         } catch (SQLException | ClassNotFoundException e) {
             // Log the error server-side
             throw new RuntimeException("Database error while updating client details: " + e.getMessage());
-                
+
         } finally {
             // Close resources
             try {
@@ -420,6 +423,88 @@ public class AdminOperation {
             }
         }
 
+    }
+
+    // Method to (soft) delete client by clientID
+    public boolean softDeleteClientByClientID(String clientID) {
+
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+
+        try {
+            connection = DatabaseConnection.getConnection();
+
+            // SQL query to soft delete client by clientID
+            String sql = "UPDATE client SET isDeleted = TRUE WHERE clientID = ?";
+
+            preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1, clientID);
+
+            int rowsAffected = preparedStatement.executeUpdate();
+
+            if (rowsAffected > 0) {
+                System.out.println("Client with clientID " + clientID + " soft deleted successfully.");
+                return true; // Client soft deleted successfully
+            } else {
+                System.out.println("No client found with clientID: " + clientID);
+                return false; // No client found with the given clientID
+            }
+
+        } catch (SQLException | ClassNotFoundException e) {
+            throw new RuntimeException("Database error while soft deleting client: " + e.getMessage());
+        } finally {
+            try {
+                if (preparedStatement != null) {
+                    preparedStatement.close();
+                }
+                if (connection != null) {
+                    DatabaseConnection.closeConnection(connection);
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException("Error closing database resources: " + e.getMessage());
+            }
+        }
+    }
+
+    // Method to soft delete admin by adminID
+    public boolean softDeleteAdminByAdminID(String adminID) {
+
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+
+        try {
+            connection = DatabaseConnection.getConnection();
+
+            // SQL query to soft delete admin by adminID
+            String sql = "UPDATE administrator SET isDeleted = TRUE WHERE adminID = ?";
+
+            preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1, adminID);
+
+            int rowsAffected = preparedStatement.executeUpdate();
+
+            if (rowsAffected > 0) {
+                System.out.println("Admin with adminID " + adminID + " soft deleted successfully.");
+                return true; // Admin soft deleted successfully
+            } else {
+                System.out.println("No admin found with adminID: " + adminID);
+                return false; // No admin found with the given adminID
+            }
+
+        } catch (SQLException | ClassNotFoundException e) {
+            throw new RuntimeException("Database error while soft deleting admin: " + e.getMessage());
+        } finally {
+            try {
+                if (preparedStatement != null) {
+                    preparedStatement.close();
+                }
+                if (connection != null) {
+                    DatabaseConnection.closeConnection(connection);
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException("Error closing database resources: " + e.getMessage());
+            }
+        }
     }
 
     // Method to update admin details using Admin object

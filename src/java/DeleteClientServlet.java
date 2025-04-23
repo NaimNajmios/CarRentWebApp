@@ -1,21 +1,23 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
+ */
 
+import Database.AdminOperation;
 import java.io.IOException;
 import java.io.PrintWriter;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import Database.AdminOperation;
-import User.Admin;
 
 /**
  *
  * @author Naim Najmi
  */
-public class UpdateAdminServlet extends HttpServlet {
+public class DeleteClientServlet extends HttpServlet {
 
     AdminOperation adminOperation = new AdminOperation();
-    Admin admin = new Admin();
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -28,30 +30,23 @@ public class UpdateAdminServlet extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // Get request parameters
-        String adminID = request.getParameter("adminID");
-        String userID = request.getParameter("userID");
-        String adminName = request.getParameter("name");
-        String adminEmail = request.getParameter("email");
 
-        // Set the updated admin details in the admin object
-        admin.setAdminID(adminID);
-        admin.setUserID(userID);
-        admin.setName(adminName);
-        admin.setEmail(adminEmail);
+        // Get the client ID from the request
+        String clientId = request.getParameter("clientID");
 
-        // Update the admin details in the database
-        boolean updated = adminOperation.updateAdminDetails(admin);
+        // Call the deleteClient method from AdminOperation
+        boolean isDeleted = adminOperation.softDeleteClientByClientID(clientId);
 
-        if (updated) {
+        // Check if the deletion was successful
+        if (isDeleted) {
             // Log
-            System.out.println("Admin details updated successfully.");
-            // Redirect to a success page or display a success message
-            response.sendRedirect(request.getContextPath() + "/admin/viewAdminDetails.jsp?userID=" + adminID + "&div_message=changesuccess");
+            System.out.println("Client deleted successfully");
+            // Redirect to the client list page with a success message
+            response.sendRedirect(request.getContextPath() + "/admin/user-management.jsp?div_message=deletesuccess");
         } else {
-            // Log 
-            System.out.println("Failed to update admin details.");
-            // Redirect to an error page or display an error message
+            // Log
+            System.out.println("Failed to delete client");
+            // Redirect to the client list page with an error message
             response.sendRedirect(request.getContextPath() + "/admin/user-management.jsp?div_message=true");
         }
     }
