@@ -6,41 +6,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <!-- Tailwind CSS CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+    <%-- Styling include --%>
+    <%@ include file="../include/credential-styling.html" %>
 
-        .register-card {
-            background: white;
-            border-radius: 1rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
-        }
-
-        .register-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .btn-primary {
-            background: #3b82f6;
-            border: none;
-            transition: background 0.3s ease;
-        }
-
-        .btn-primary:hover {
-            background: #2563eb;
-        }
-    </style>
 </head>
 
 <body>
@@ -117,56 +85,16 @@
                 <!-- Login Link -->
                 <div class="text-center mt-6">
                     <p class="text-sm text-gray-600">Already have an account?
-                        <a href="index.html" class="text-blue-600 hover:underline">Log in</a>
+                        <a href="index.jsp" class="text-blue-600 hover:underline">Log in</a>
                     </p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- JavaScript to Display Messages -->
-    <script>
-        // Get the message and error parameters from the URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const error = urlParams.get('error');
-        const success = urlParams.get('success');
-        const errorMessageDiv = document.getElementById('error-message');
-        const messageDiv = document.getElementById('message');
-
-        if (success) {
-            messageDiv.textContent = 'Registration successful! Please log in.';
-        }
-
-        if (error) {
-            switch (error) {
-                case 'empty':
-                    errorMessageDiv.textContent = 'Please fill in all fields.';
-                    break;
-                case 'duplicate':
-                    errorMessageDiv.textContent = 'Username already exists. Please choose another.';
-                    break;
-                case 'server':
-                    errorMessageDiv.textContent = 'A server error occurred. Please try again later.';
-                    break;
-                default:
-                    errorMessageDiv.textContent = 'An error occurred. Please try again.';
-            }
-        }
-    </script>
-
     <!-- JavaScript Dependencies -->
-    <script src="js/jquery-3.3.1.min.js"></script>
-    <script src="js/popper.min.js"></script>
-    <script src="js/bootstrap.min.js"></script>
-    <script src="js/owl.carousel.min.js"></script>
-    <script src="js/jquery.sticky.js"></script>
-    <script src="js/jquery.waypoints.min.js"></script>
-    <script src="js/jquery.animateNumber.min.js"></script>
-    <script src="js/jquery.fancybox.min.js"></script>
-    <script src="js/jquery.easing.1.3.js"></script>
-    <script src="js/bootstrap-datepicker.min.js"></script>
-    <script src="js/aos.js"></script>
-    <script src="js/main.js"></script>
+    <%@ include file="../include/credential-js.html" %>
+
 </body>
 
 </html>
