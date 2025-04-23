@@ -173,7 +173,7 @@
                             </button>
                         </div>
                         <div class="modal-body">
-                            <form action="AddUserServlet" method="post">
+                            <form action="RegisterWalkIn" method="post">
                                 <div class="form-group">
                                     <label for="userName">Name</label>
                                     <input type="text" class="form-control" id="userName" name="name" required>
@@ -185,13 +185,13 @@
                                 <div class="form-group">
                                     <label for="userRole">Role</label>
                                     <select class="form-control" id="userRole" name="role" required>
-                                        <option value="Customer">Customer</option>
-                                        <option value="Admin">Admin</option>
+                                        <option value="Client">Client</option>
+                                        <option value="Administrator">Administrator</option>
                                     </select>
                                 </div>
                                 <div class="form-group">
                                     <label for="userPassword">Password</label>
-                                    <input type="password" class="form-control" id="userPassword" name="password" required>
+                                    <input type="text" class="form-control" id="userPassword" name="password" value="Temp123! (Temporary password)" disabled>
                                 </div>
                                 <button type="submit" class="btn btn-primary">Save</button>
                             </form>

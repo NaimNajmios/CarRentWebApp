@@ -328,6 +328,77 @@ public class AdminOperation {
         return registrationSuccess;
     }
 
+    public boolean registerWalkInCustomer(String fullName, String email) throws SQLException, Exception {
+        Connection connection = null;
+        boolean registrationSuccess = false;
+        long newUserId = -1;
+
+        // You can generate a username (e.g., email prefix + timestamp) or leave it up
+        // to your design
+        String username = email.split("@")[0] + System.currentTimeMillis(); // e.g., "john.1684222345"
+        String plainPassword = "Temp123!"; // Default temporary password
+        String hashedPassword = hashPasswordSHA256(plainPassword);
+        String role = "Client";
+
+        String sqlInsertUser = "INSERT INTO user (username, password, role) VALUES (?, ?, ?)";
+        String sqlInsertClient = "INSERT INTO client (userID, name, address, phonenumber, email) VALUES (?, ?, ?, ?, ?)";
+
+        try {
+            connection = DatabaseConnection.getConnection();
+            connection.setAutoCommit(false);
+
+            // Insert into 'user' table
+            try (PreparedStatement psUser = connection.prepareStatement(sqlInsertUser,
+                    PreparedStatement.RETURN_GENERATED_KEYS)) {
+                psUser.setString(1, username);
+                psUser.setString(2, hashedPassword);
+                psUser.setString(3, role);
+
+                int rows = psUser.executeUpdate();
+                if (rows == 0)
+                    throw new SQLException("User insert failed, no rows affected.");
+
+                try (ResultSet generatedKeys = psUser.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        newUserId = generatedKeys.getLong(1);
+                    } else {
+                        throw new SQLException("No userID returned.");
+                    }
+                }
+            }
+
+            // Insert into 'client' table with minimal info
+            try (PreparedStatement psClient = connection.prepareStatement(sqlInsertClient)) {
+                psClient.setLong(1, newUserId);
+                psClient.setString(2, fullName);
+                psClient.setString(3, ""); // Address not provided
+                psClient.setString(4, ""); // Phone not provided
+                psClient.setString(5, email);
+
+                int clientRows = psClient.executeUpdate();
+                if (clientRows == 0)
+                    throw new SQLException("Client insert failed.");
+            }
+
+            connection.commit();
+            registrationSuccess = true;
+            System.out.println("Walk-in customer registered successfully: " + fullName + " (" + email + ")");
+            System.out.println("Temporary Username: " + username + " | Password: " + plainPassword);
+
+        } catch (Exception e) {
+            if (connection != null)
+                connection.rollback();
+            throw e;
+        } finally {
+            if (connection != null) {
+                connection.setAutoCommit(true);
+                DatabaseConnection.closeConnection(connection);
+            }
+        }
+
+        return registrationSuccess;
+    }
+
     // Update client details by Client object
     public boolean updateClientDetails(Client client) {
 

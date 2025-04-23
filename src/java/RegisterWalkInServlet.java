@@ -3,23 +3,26 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
  */
 
-import Database.DBOperation;
-import User.User;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.security.NoSuchAlgorithmException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import Database.DBOperation;
+import User.Client;
+import User.User;
+
 /**
  *
  * @author Naim Najmi
  */
-public class LoginServlet extends HttpServlet {
+public class RegisterWalkInServlet extends HttpServlet {
 
     DBOperation db = new DBOperation();
+    User user = new User();
+    Client client = new Client();
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -31,30 +34,27 @@ public class LoginServlet extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException, NoSuchAlgorithmException {
+            throws ServletException, IOException {
+        
+            // Get the form data from the request
+            String username = request.getParameter("name");
+            String email = request.getParameter("email");
 
-        // Handles login form submission
-        String username = request.getParameter("username");
-        String password = request.getParameter("password");
+            // Log
+            System.out.println("Walk-in User: " + username);
+            System.out.println("Walk-in Email: " + email);
 
-        if (db.validateUser(username, password)) {
-            // Login successful, redirect to home page
-            User user = db.getUser(username);
-            // Set session attributes object
-            request.getSession().setAttribute("user", user);
-            
-            // Check if user is admin or client
-            if (user.getRole().equals("Administrator")) {
-                response.sendRedirect("admin/user-management.jsp");
+            // Add the user to the database
+            boolean success = db.registerWalkInCustomer(username, email);
+
+            if (success) {
+                // User registration successful, redirect to login page
+                response.sendRedirect(request.getContextPath() + "/admin/user-management.jsp?div_message=success");
             } else {
-                response.sendRedirect("clientHome.jsp");
+                // User registration failed, redirect back to register page
+                response.sendRedirect(request.getContextPath() + "/admin/user-management.jsp?div_message=error");
             }
 
-        } else {
-            // Login failed, redirect to login page with error message
-            System.out.println("Login failed!");
-            response.sendRedirect("login.html?error=true");
-        }
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
