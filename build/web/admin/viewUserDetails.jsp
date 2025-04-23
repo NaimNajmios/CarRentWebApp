@@ -83,6 +83,7 @@
                             </div>
                             <div class="card-body">
                                 <a href="user-management.jsp" class="btn btn-secondary btn-sm mb-3">Back to User Management</a>
+                                <%-- Message --%>
                                 <div id="div_message" class="text-center mb-4" style="color: blue;"></div>
                                 <%-- Display user details --%>
                                 <dl class="user-details">

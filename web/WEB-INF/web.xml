@@ -4,9 +4,17 @@
         <servlet-name>UpdateClientServlet</servlet-name>
         <servlet-class>UpdateClientServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>UpdateAdminServlet</servlet-name>
+        <servlet-class>UpdateAdminServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>UpdateClientServlet</servlet-name>
         <url-pattern>/UpdateClient</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>UpdateAdminServlet</servlet-name>
+        <url-pattern>/UpdateAdmin</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

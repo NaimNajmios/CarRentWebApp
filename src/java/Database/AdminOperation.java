@@ -325,7 +325,7 @@ public class AdminOperation {
         return registrationSuccess;
     }
 
-    // Update client details by Client object 
+    // Update client details by Client object
     public boolean updateClientDetails(Client client) {
 
         Connection connection = null;
@@ -353,7 +353,9 @@ public class AdminOperation {
             return rowsAffected > 0; // Returns true if update was successful
 
         } catch (SQLException | ClassNotFoundException e) {
+            // Log the error server-side
             throw new RuntimeException("Database error while updating client details: " + e.getMessage());
+                
         } finally {
             // Close resources
             try {
