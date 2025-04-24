@@ -7,6 +7,8 @@ package Database;
 import User.Client;
 import User.User;
 import User.Admin;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -328,75 +330,104 @@ public class AdminOperation {
         return registrationSuccess;
     }
 
-    public boolean registerWalkInCustomer(String fullName, String email) throws SQLException, Exception {
+    // Method to register walk in customer, parameter of Client and User object
+    public boolean registerWalkInCustomer(Client client, User user) throws SQLException, Exception {
+
         Connection connection = null;
         boolean registrationSuccess = false;
         long newUserId = -1;
 
-        // You can generate a username (e.g., email prefix + timestamp) or leave it up
-        // to your design
-        String username = email.split("@")[0] + System.currentTimeMillis(); // e.g., "john.1684222345"
+        // User info
+        String userName = user.getUsername();
         String plainPassword = "Temp123!"; // Default temporary password
         String hashedPassword = hashPasswordSHA256(plainPassword);
         String role = "Client";
 
-        String sqlInsertUser = "INSERT INTO user (username, password, role) VALUES (?, ?, ?)";
-        String sqlInsertClient = "INSERT INTO client (userID, name, address, phonenumber, email) VALUES (?, ?, ?, ?, ?)";
+        // Client details
+        String clientName = client.getName();
+        String address = client.getAddress();
+        String phoneNumber = client.getPhoneNumber();
+        String email = client.getEmail();
 
         try {
+            // *** Start Transaction ***
             connection = DatabaseConnection.getConnection();
             connection.setAutoCommit(false);
 
-            // Insert into 'user' table
-            try (PreparedStatement psUser = connection.prepareStatement(sqlInsertUser,
-                    PreparedStatement.RETURN_GENERATED_KEYS)) {
-                psUser.setString(1, username);
+            // 1. Insert into 'user' table
+            String sqlInsertUser = "INSERT INTO user (username, password, role) VALUES (?, ?, ?)";
+            try (PreparedStatement psUser = connection.prepareStatement(sqlInsertUser, PreparedStatement.RETURN_GENERATED_KEYS)) {
+                psUser.setString(1, userName);
                 psUser.setString(2, hashedPassword);
                 psUser.setString(3, role);
 
                 int rows = psUser.executeUpdate();
-                if (rows == 0)
+                if (rows == 0) {
                     throw new SQLException("User insert failed, no rows affected.");
+                }
 
                 try (ResultSet generatedKeys = psUser.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
                         newUserId = generatedKeys.getLong(1);
                     } else {
-                        throw new SQLException("No userID returned.");
+                        throw new SQLException("Creating user failed, no ID obtained.");
                     }
                 }
+            } catch (SQLException e) {
+                System.err.println("Database error during user insert: " + e.getMessage());
+                e.printStackTrace();
+                connection.rollback(); // *** Rollback Transaction ***
+                throw e; // Rethrow the SQLException
             }
 
-            // Insert into 'client' table with minimal info
+            // 2. Insert into 'client' table
+            String sqlInsertClient = "INSERT INTO client (userID, name, address, phonenumber, email) VALUES (?, ?, ?, ?, ?)";
             try (PreparedStatement psClient = connection.prepareStatement(sqlInsertClient)) {
                 psClient.setLong(1, newUserId);
-                psClient.setString(2, fullName);
-                psClient.setString(3, ""); // Address not provided
-                psClient.setString(4, ""); // Phone not provided
+                psClient.setString(2, clientName);
+                psClient.setString(3, address);
+                psClient.setString(4, phoneNumber);
                 psClient.setString(5, email);
 
-                int clientRows = psClient.executeUpdate();
-                if (clientRows == 0)
-                    throw new SQLException("Client insert failed.");
+                int rows = psClient.executeUpdate();
+                if (rows == 0) {
+                    throw new SQLException("Client insert failed, no rows affected.");
+                }
+            } catch (SQLException e) {
+                System.err.println("Database error during client insert: " + e.getMessage());
+                e.printStackTrace();
+                connection.rollback(); // *** Rollback Transaction ***
+                throw e; // Rethrow the SQLException
             }
 
+            // *** Commit Transaction ***
             connection.commit();
             registrationSuccess = true;
-            System.out.println("Walk-in customer registered successfully: " + fullName + " (" + email + ")");
-            System.out.println("Temporary Username: " + username + " | Password: " + plainPassword);
-
-        } catch (Exception e) {
-            if (connection != null)
-                connection.rollback();
-            throw e;
-        } finally {
+        } catch (SQLException e) {
+            System.err.println("Database error during registration for user " + userName + ": " + e.getMessage());
+            e.printStackTrace();
             if (connection != null) {
-                connection.setAutoCommit(true);
-                DatabaseConnection.closeConnection(connection);
+                try {
+                    System.err.println("Rolling back transaction due to DB error.");
+                    connection.rollback(); // *** Rollback Transaction ***
+                } catch (SQLException ex) {
+                    System.err.println("Rollback failed: " + ex.getMessage());
+                    ex.printStackTrace();
+                }
             }
         }
-
         return registrationSuccess;
+    }
+
+    // Helper method to hash a password with SHA-256
+    private String hashPasswordSHA256(String password) throws NoSuchAlgorithmException {
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        byte[] hashBytes = md.digest(password.getBytes());
+        StringBuilder sb = new StringBuilder();
+        for (byte b : hashBytes) {
+            sb.append(String.format("%02x", b));
+        }
+        return sb.toString();
     }
 
     // Update client details by Client object

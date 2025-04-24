@@ -32,7 +32,7 @@
                             </div>
                         </div>
                         <div class="col-6 col-md-9 text-right">
-                            <a href="Logout" class="btn btn-light">Logout</a>
+                            <a href="<%= request.getContextPath()%>/Logout" class="btn btn-light">Logout</a>
                         </div>
                     </div>
                 </div>
@@ -173,27 +173,32 @@
                             </button>
                         </div>
                         <div class="modal-body">
-                            <form action="RegisterWalkIn" method="post">
+                            <form action="<%= request.getContextPath()%>/RegisterWalkIn" method="post">
                                 <div class="form-group">
-                                    <label for="userName">Name</label>
-                                    <input type="text" class="form-control" id="userName" name="name" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="userEmail">Email</label>
-                                    <input type="email" class="form-control" id="userEmail" name="email" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="userRole">Role</label>
-                                    <select class="form-control" id="userRole" name="role" required>
-                                        <option value="Client">Client</option>
-                                        <option value="Administrator">Administrator</option>
-                                    </select>
+                                    <label for="userName">Username</label>
+                                    <input type="text" class="form-control" id="userName" name="username" placeholder="Enter your username" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="userPassword">Password</label>
-                                    <input type="text" class="form-control" id="userPassword" name="password" value="Temp123! (Temporary password)" disabled>
+                                    <input type="text" class="form-control" id="userPassword" name="password" placeholder="Temp123! (Temporary password)" disabled>
                                 </div>
-                                <button type="submit" class="btn btn-primary">Save</button>
+                                <div class="form-group">
+                                    <label for="userEmail">Email</label>
+                                    <input type="email" class="form-control" id="userEmail" name="email" placeholder="Enter your email" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="fullName">Full Name</label>
+                                    <input type="text" class="form-control" id="fullName" name="full-name" placeholder="Enter your full name" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="address">Address</label>
+                                    <input type="text" class="form-control" id="address" name="address" placeholder="Enter your address" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="phoneNumber">Phone Number</label>
+                                    <input type="text" class="form-control" id="phoneNumber" name="phone-number" placeholder="Enter your phone number" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Sign Up</button>
                             </form>
                         </div>
                     </div>

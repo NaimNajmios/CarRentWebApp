@@ -26,6 +26,9 @@ if (div_message) {
         case 'deletesuccess':
             errorMessageDiv.textContent = 'User successfully deleted.';
             break;
+        case 'operationfailed':
+            errorMessageDiv.textContent = 'Operation failed. Please try again.';
+            break;
         default:
             errorMessageDiv.textContent = 'An error occurred. Please try again.';
     }

@@ -10,9 +10,12 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import Database.AdminOperation;
 import Database.DBOperation;
 import User.Client;
 import User.User;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -20,7 +23,7 @@ import User.User;
  */
 public class RegisterWalkInServlet extends HttpServlet {
 
-    DBOperation db = new DBOperation();
+    AdminOperation db = new AdminOperation();
     User user = new User();
     Client client = new Client();
 
@@ -34,22 +37,38 @@ public class RegisterWalkInServlet extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+            throws ServletException, IOException, Exception {
         
             // Get the form data from the request
-            String username = request.getParameter("name");
+            String username = request.getParameter("username");
+            
             String email = request.getParameter("email");
+            String fullname = request.getParameter("full-name");
+            String address = request.getParameter("address");
+            String phoneNumber = request.getParameter("phone-number");
 
-            // Log
-            System.out.println("Walk-in User: " + username);
-            System.out.println("Walk-in Email: " + email);
+            // Set the user details in the user object
+            user.setUsername(username);
+
+            // Set the client details in the client object
+            client.setEmail(email);
+            client.setName(fullname);
+            client.setAddress(address);
+            client.setPhoneNumber(phoneNumber);
+
+            // Logging for debug
+            System.out.println("Username: " + username);
+            System.out.println("Email: " + email);
+            System.out.println("Full Name: " + fullname);
+            System.out.println("Address: " + address);
+            System.out.println("Phone Number: " + phoneNumber);
 
             // Add the user to the database
-            boolean success = db.registerWalkInCustomer(username, email);
+            boolean success = db.registerWalkInCustomer(client, user);
 
             if (success) {
                 // User registration successful, redirect to login page
-                response.sendRedirect(request.getContextPath() + "/admin/user-management.jsp?div_message=success");
+                response.sendRedirect(request.getContextPath() + "/admin/user-management.jsp?div_message=changesuccess");
             } else {
                 // User registration failed, redirect back to register page
                 response.sendRedirect(request.getContextPath() + "/admin/user-management.jsp?div_message=error");
@@ -69,7 +88,11 @@ public class RegisterWalkInServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        try {
+            processRequest(request, response);
+        } catch (Exception ex) {
+            Logger.getLogger(RegisterWalkInServlet.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
@@ -83,7 +106,11 @@ public class RegisterWalkInServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        try {
+            processRequest(request, response);
+        } catch (Exception ex) {
+            Logger.getLogger(RegisterWalkInServlet.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
