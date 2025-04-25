@@ -66,7 +66,7 @@
                             </div>
                         </div>
                         <div class="col-6 col-md-9 text-right">
-                            <a href="Logout" class="btn btn-light">Logout</a>
+                            <a href="<%= request.getContextPath()%>/Logout" class="btn btn-light">Logout</a>
                         </div>
                     </div>
                 </div>
@@ -83,7 +83,6 @@
                             </div>
                             <div class="card-body">
                                 <a href="user-management.jsp" class="btn btn-secondary btn-sm mb-3">Back to User Management</a>
-                                <%-- Message --%>
                                 <div id="div_message" class="text-center mb-4" style="color: blue;"></div>
                                 <%-- Display user details --%>
                                 <dl class="user-details">

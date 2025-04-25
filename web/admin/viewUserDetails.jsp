@@ -66,7 +66,7 @@
                             </div>
                         </div>
                         <div class="col-6 col-md-9 text-right">
-                            <a href="Logout" class="btn btn-light">Logout</a>
+                            <a href="<%= request.getContextPath()%>/Logout" class="btn btn-light">Logout</a>
                         </div>
                     </div>
                 </div>
