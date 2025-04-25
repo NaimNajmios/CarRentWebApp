@@ -77,6 +77,105 @@ public class DBOperation {
         return isValid;
     }
 
+    // Method to check whether user is using temporary password
+    public boolean isUsingTemporaryPassword(String userID) throws NoSuchAlgorithmException {
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        boolean isUsing = false;
+
+        try {
+            // Get database connection
+            connection = DatabaseConnection.getConnection();
+
+            // SQL query to check if the username and hashed password match
+            String sql = "SELECT * FROM user WHERE userID = ?";
+            preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1, userID);
+
+            // Execute the query
+            resultSet = preparedStatement.executeQuery();
+
+            // Compare to hashed temp of Temp123!
+            if (resultSet.next()) {
+                String hashedTemp = resultSet.getString("password");
+                String hashedTemp123 = hashPasswordSHA256("Temp123!");
+                if (hashedTemp.equals(hashedTemp123)) {
+                    isUsing = true;
+                } else {
+                    isUsing = false;
+                }
+            }
+
+        } catch (SQLException | ClassNotFoundException e) {
+            throw new RuntimeException("Database error during user validation: " + e.getMessage());
+        } finally {
+            // Close resources
+            try {
+                if (resultSet != null) {
+                    resultSet.close();
+                }
+                if (preparedStatement != null) {
+                    preparedStatement.close();
+                }
+                if (connection != null) {
+                    DatabaseConnection.closeConnection(connection);
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException("Error closing database resources: " + e.getMessage());
+            }
+        }
+
+        return isUsing;
+    }
+
+    // Method to reset temporary password
+    public boolean resetTemporaryPassword(String userID, String newPassword) throws NoSuchAlgorithmException {
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        boolean isReset = false;
+
+        try {
+            // Get database connection
+            connection = DatabaseConnection.getConnection();
+
+            // Hash the plain password using SHA-256
+            String hashedPassword = hashPasswordSHA256(newPassword);
+
+            // SQL query to check if the username and hashed password match
+            String sql = "UPDATE user SET password = ? WHERE userID = ?";
+            preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1, hashedPassword);
+            preparedStatement.setString(2, userID);
+
+            // Execute the query
+            int rowsAffected = preparedStatement.executeUpdate();
+
+            // If a record is found, the credentials are valid
+            if (rowsAffected > 0) {
+                isReset = true;
+                System.out.println("Password reset successful!");
+            }
+
+        } catch (SQLException | ClassNotFoundException e) {
+            throw new RuntimeException("Database error during user validation: " + e.getMessage());
+        } finally {
+            // Close resources
+            try {
+                if (preparedStatement != null) {
+                    preparedStatement.close();
+                }
+                if (connection != null) {
+                    DatabaseConnection.closeConnection(connection);
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException("Error closing database resources: " + e.getMessage());
+            }
+        }
+
+        return isReset;
+    }
+
     public boolean registerUser(String username, String plainPassword, String email,
             String fullName, String address, String phoneNumber)
             throws SQLException, Exception {

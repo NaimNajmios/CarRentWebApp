@@ -3,24 +3,26 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
  */
 
-import Database.DBOperation;
-import User.User;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.security.NoSuchAlgorithmException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import Database.DBOperation;
+import User.User;
+import java.security.NoSuchAlgorithmException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  *
  * @author Naim Najmi
  */
-public class LoginServlet extends HttpServlet {
+public class ResetTempPassServlet extends HttpServlet {
 
+    User user = new User();
     DBOperation db = new DBOperation();
 
     /**
@@ -35,35 +37,28 @@ public class LoginServlet extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, NoSuchAlgorithmException {
 
-        // Handles login form submission
-        String username = request.getParameter("username");
-        String password = request.getParameter("password");
+        // Get attribute from reset form
+        String newPassword = request.getParameter("newPassword");
+        String confirmPassword = request.getParameter("confirmPassword");
 
-        if (db.validateUser(username, password)) {
-            // Login successful, redirect to home page
-            User user = db.getUser(username);
-            // Set session attributes object
-            request.getSession().setAttribute("user", user);
+        // Get user object from session
+        user = (User) request.getSession().getAttribute("user");
 
-            // Check if user is admin or client
-            if (user.getRole().equals("Administrator")) {
-                response.sendRedirect("admin/user-management.jsp");
+        // Check if new password and confirm password match
+        if (newPassword.equals(confirmPassword)) {
+            // Update user password
+            if (db.resetTemporaryPassword(user.getUserID(), newPassword)) {
+                // Password reset successful, redirect to login page
+                response.sendRedirect("clientHome.html");
             } else {
-                // Check if user has a temporary password
-                if (db.isUsingTemporaryPassword(user.getUserID())) {
-                    // User has a temporary password, redirect to reset password page
-                    response.sendRedirect("reset-temp-password.jsp");
-                } else {
-                    // User does not have a temporary password, redirect to client home page
-                    response.sendRedirect("clientHome.jsp");
-                }
+                // Password reset failed, redirect to reset password page with error message
+                response.sendRedirect("reset-temp-password.jsp?error=true");
             }
-
         } else {
-            // Login failed, redirect to login page with error message
-            System.out.println("Login failed!");
-            response.sendRedirect("login.html?error=true");
+            // Passwords do not match, redirect to reset password page with error message
+            response.sendRedirect("reset-temp-password.jsp?error=true");
         }
+
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
@@ -81,7 +76,7 @@ public class LoginServlet extends HttpServlet {
         try {
             processRequest(request, response);
         } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(LoginServlet.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ResetTempPassServlet.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -99,7 +94,7 @@ public class LoginServlet extends HttpServlet {
         try {
             processRequest(request, response);
         } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(LoginServlet.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ResetTempPassServlet.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
