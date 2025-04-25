@@ -32,8 +32,7 @@
                             </div>
                         </div>
                         <div class="col-6 col-md-9 text-right">
-                            <a href="<%= request.getContextPath()%>/Logout" class="btn btn-light">Logout</a>
-                        </div>
+                            <a href="<%= request.getContextPath()%>/Logout" class="btn btn-light" onclick="return confirm('Are you sure you want to logout?')">Logout</a>                        </div>
                     </div>
                 </div>
             </header>
