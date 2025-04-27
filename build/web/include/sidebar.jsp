@@ -30,13 +30,13 @@
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link <%= request.getRequestURI().contains("reports.jsp") ? "active" : ""%>" href="reports.jsp">
-                <i class="fas fa-chart-bar"></i>Reports
+            <a class="nav-link <%= request.getRequestURI().contains("payments") ? "active" : ""%>" href="payment-verification.jsp">
+                <i class="fas fa-credit-card"></i>Payment Verification
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link <%= request.getRequestURI().contains("payments") ? "active" : ""%>" href="payment-verification.jsp">
-                <i class="fas fa-credit-card"></i>Payment Verification
+            <a class="nav-link <%= request.getRequestURI().contains("reports.jsp") ? "active" : ""%>" href="reports.jsp">
+                <i class="fas fa-chart-bar"></i>Reports
             </a>
         </li>
     </ul>
