@@ -7,45 +7,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <link href="https://fonts.googleapis.com/css?family=DM+Sans:300,400,700&display=swap" rel="stylesheet">
         <%@ include file="../include/admin-styling.html" %>
-        <style>
-            .tab-content {
-                margin-top: 20px;
-            }
-            .report-form {
-                padding: 20px;
-                border: 1px solid #dee2e6;
-                border-radius: 8px;
-            }
-            .report-form .form-group {
-                margin-bottom: 15px;
-            }
-            .report-preview {
-                margin-top: 20px;
-            }
-            .report-type-group, .duration-group, .date-range-group, .filter-group {
-                margin-bottom: 15px;
-                padding: 15px;
-                border: 1px solid #dee2e6;
-                border-radius: 5px;
-                background-color: #f8f9fa;
-            }
-            .report-type-group h6, .duration-group h6, .date-range-group h6, .filter-group h6 {
-                margin-top: 0;
-                margin-bottom: 10px;
-                font-weight: bold;
-            }
-            .duration-group .date-selection-group {
-                display: flex;
-                gap: 10px;
-                align-items: center;
-                flex-wrap: wrap;
-            }
-            .datepicker.disabled {
-                background-color: #f0f0f0;
-                color: #6c757d;
-                cursor: not-allowed;
-            }
-        </style>
+        <%@ include file="../include/admin-report-styling.html" %>
+
     </head>
     <body data-spy="scroll" data-target=".site-navbar-target" data-offset="300">
         <div class="site-wrap" id="reports-section">
@@ -103,9 +66,6 @@
                                                         <select class="form-control" id="bookingReportType" name="reportType">
                                                             <option value="booking_summary">Booking Summary</option>
                                                             <option value="detailed_bookings">Detailed Bookings</option>
-                                                            <option value="revenue_trends">Revenue Trends</option>
-                                                            <option value="late_returns">Late Returns</option>
-                                                            <option value="cancellation_rates">Cancellation Rates</option>
                                                             <option value="bookings_by_client">Bookings by Client</option>
                                                         </select>
                                                     </div>
@@ -423,10 +383,7 @@
                                                     <div class="form-group">
                                                         <label for="userReportType">Select Report Type</label>
                                                         <select class="form-control" id="userReportType" name="reportType">
-                                                            <option value="registration_summary">Registration Summary</option>
                                                             <option value="detailed_registrations">Detailed Registrations</option>
-                                                            <option value="login_activity">Login Activity</option>
-                                                            <option value="profile_updates">Profile Updates</option>
                                                         </select>
                                                     </div>
                                                 </div>
@@ -487,37 +444,5 @@
                 </div>
             </div>
             <%@ include file="../include/admin-js.html" %>
-            <script>
-                $(document).ready(function () {
-                    // Initialize datepicker
-                    $('.datepicker').datepicker({
-                        format: 'yyyy-mm-dd',
-                        autoclose: true
-                    });
-
-                    // Function to toggle date inputs state
-                    function toggleDateInputs(container, isCustom) {
-                        const $startDate = container.find('.datepicker[id$="StartDate"]');
-                        const $endDate = container.find('.datepicker[id$="EndDate"]');
-                        if (isCustom) {
-                            $startDate.prop('disabled', false).removeClass('disabled');
-                            $endDate.prop('disabled', false).removeClass('disabled');
-                        } else {
-                            $startDate.prop('disabled', true).addClass('disabled');
-                            $endDate.prop('disabled', true).addClass('disabled');
-                        }
-                    }
-
-                    // Handle date range type change for each report form
-                    $('.report-form').each(function () {
-                        const $form = $(this);
-                        const $dateRangeInputs = $form.find('input[name="dateRangeType"]');
-                        $dateRangeInputs.change(function () {
-                            const isCustom = $(this).val() === 'custom';
-                            toggleDateInputs($form, isCustom);
-                        }).trigger('change'); // Trigger on load to set initial state
-                    });
-                });
-            </script>
     </body>
 </html>
