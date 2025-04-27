@@ -82,7 +82,7 @@
                                 <dl class="user-details">
                                     <dt>Admin ID</dt>
                                     <dd><% out.print(adminID); %></dd>
-                                    <dt>Client ID</dt>
+                                    <dt>User ID</dt>
                                     <dd><% out.print(userid); %></dd>
                                     <dt>Name</dt>
                                     <dd><% out.print(adminName); %></dd>

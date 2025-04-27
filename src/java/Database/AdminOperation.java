@@ -609,6 +609,58 @@ public class AdminOperation {
         }
     }
 
+    // Method to get admin details by userID
+    public Admin getAdminDetailsByUserID(String userID) {
+
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        Admin admin = null;
+
+        try {
+            connection = DatabaseConnection.getConnection();
+
+            // SQL query to retrieve admin details by userID
+            String sql = "SELECT * FROM administrator WHERE userID = ?";
+            preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1, userID);
+
+            // Execute the query
+            resultSet = preparedStatement.executeQuery();
+
+            // If a record is found, create an Admin object and populate it
+            if (resultSet.next()) {
+                admin = new Admin(); // Instantiate the Admin object
+                admin.setUserID(resultSet.getString("userID"));
+                admin.setAdminID(resultSet.getString("adminID"));
+                admin.setName(resultSet.getString("name"));
+                admin.setEmail(resultSet.getString("email"));
+            } else {
+                System.out.println("No admin found with userID: " + userID);
+            }
+
+        } catch (SQLException | ClassNotFoundException e) {
+            throw new RuntimeException("Database error while retrieving admin details: " + e.getMessage());
+        } finally {
+            // Close resources
+            try {
+                if (resultSet != null) {
+                    resultSet.close();
+                }
+                if (preparedStatement != null) {
+                    preparedStatement.close();
+                }
+                if (connection != null) {
+                    DatabaseConnection.closeConnection(connection);
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException("Error closing database resources: " + e.getMessage());
+            }
+        }
+
+        return admin;
+    }
+
     // Method to update admin details using Admin object
     public boolean updateAdminDetails(Admin admin) {
 

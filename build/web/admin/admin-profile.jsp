@@ -1,0 +1,113 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="Database.AdminOperation"%>
+<%@ page import="Database.DBOperation"%>
+<%@ page import="User.Admin"%>
+<%@ page import="User.User"%>
+
+<%-- Get admin data from session --%>
+<%
+    AdminOperation dbo = new AdminOperation();
+    User user = null;
+    Admin admin = null;
+
+    String adminID = "";
+    String userid = "";
+    String adminName = "";
+    String adminEmail = "";
+
+    // Reassign object passed in session
+    user = (User)session.getAttribute("user");
+    admin = (Admin)session.getAttribute("admin");
+
+    if (user != null) {
+        adminID = admin.getAdminID();
+        userid = admin.getUserID();
+        adminName = admin.getName();
+        adminEmail = admin.getEmail();
+    } else if (admin != null) {
+        // Redirect to user management
+        response.sendRedirect("user-management.jsp");
+        return;
+    }
+
+%>
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>CarRent Admin - My Profile</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <link href="https://fonts.googleapis.com/css?family=DM+Sans:300,400,700&display=swap" rel="stylesheet">
+        <!-- Fixed Paths for CSS -->
+        <%@ include file="../include/admin-styling.html" %>
+    </head>
+    <body data-spy="scroll" data-target=".site-navbar-target" data-offset="300">
+        <div class="site-wrap" id="profile-section">
+            <header class="site-header site-navbar-target" role="banner">
+                <div class="container">
+                    <div class="row align-items-center">
+                        <div class="col-6 col-md-3">
+                            <div class="site-logo">
+                                <a href="user-management.jsp">CarRent Admin</a>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-9 text-right">
+                            <a href="<%= request.getContextPath()%>/Logout" class="btn btn-light" onclick="return confirm('Are you sure you want to logout?')">Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="container-fluid">
+                <div class="row">
+                    <%@ include file="../include/sidebar.jsp" %>
+                    <main class="col-md-9 ms-sm-auto col-lg-10 content">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="mb-0">My Profile</h3>
+                            </div>
+                            <div class="card-body">
+                                <form action="UpdateAdminProfile" method="post">
+                                    <%-- Message --%>
+                                    <div id="div_message" class="text-center mb-4" style="color: blue;">
+                                        <%
+                                            String message = (String) request.getAttribute("message");
+                                            if (message != null) {
+                                                out.print(message);
+                                            }
+                                        %>
+                                    </div>
+                                    <div class="form-group mb-3">
+                                        <label for="adminID">Admin ID</label>
+                                        <input type="text" class="form-control" id="adminID" name="adminID" value="<% out.print(adminID); %>" disabled>
+                                        <input type="hidden" name="adminID" value="<% out.print(adminID); %>">
+                                    </div>
+                                    <%-- User ID --%>
+                                    <div class="form-group mb-3">
+                                        <label for="userID">User ID</label>
+                                        <input type="text" class="form-control" id="userID" name="userID" value="<% out.print(userid); %>" disabled>
+                                        <input type="hidden" name="userID" value="<% out.print(userid); %>">
+                                    </div>
+                                    <%-- Name --%>
+                                    <div class="form-group mb-3">
+                                        <label for="name">Name</label>
+                                        <input type="text" class="form-control" id="name" name="name" value="<% out.print(adminName); %>" required>
+                                    </div>
+                                    <div class="form-group mb-3">
+                                        <label for="email">Email</label>
+                                        <input type="email" class="form-control" id="email" name="email" value="<% out.print(adminEmail);%>" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                                    <a href="user-management.jsp" class="btn btn-outline-secondary">Cancel</a>
+                                </form>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            </div>
+        </div>
+        <!-- Fixed Paths for JS -->
+        <%@ include file="../include/admin-js.html" %>
+    </body>
+</html>

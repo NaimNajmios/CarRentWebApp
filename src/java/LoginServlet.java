@@ -3,7 +3,10 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
  */
 
+import Database.AdminOperation;
 import Database.DBOperation;
+import User.Admin;
+import User.Client;
 import User.User;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -22,6 +25,10 @@ import javax.servlet.http.HttpServletResponse;
 public class LoginServlet extends HttpServlet {
 
     DBOperation db = new DBOperation();
+    AdminOperation ao = new AdminOperation();
+    User user = new User();
+    Admin admin = new Admin();
+    Client client = new Client();
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -42,20 +49,37 @@ public class LoginServlet extends HttpServlet {
         if (db.validateUser(username, password)) {
             // Login successful, redirect to home page
             User user = db.getUser(username);
-            // Set session attributes object
+
+            // Console log for debugging, username
+            System.out.println("Username: " + username);
+
+            // Set session attributes object for user
             request.getSession().setAttribute("user", user);
+
+            System.out.println("User: " + user);
 
             // Check if user is admin or client
             if (user.getRole().equals("Administrator")) {
+                // Set session attributes object if admin
+                admin = ao.getAdminDetailsByUserID(user.getUserID());
+                request.getSession().setAttribute("admin", admin);
                 response.sendRedirect("admin/user-management.jsp");
+                System.out.println("Admin: " + admin);
             } else {
                 // Check if user has a temporary password
                 if (db.isUsingTemporaryPassword(user.getUserID())) {
+                    // Set session attributes object if client
+                    client = db.getClientDataByID(user.getUserID());
+                    request.getSession().setAttribute("client", client);                    
                     // User has a temporary password, redirect to reset password page
                     response.sendRedirect("reset-temp-password.jsp");
                 } else {
+                    // Set session attributes object if client
+                    client = db.getClientDataByID(user.getUserID());
+                    request.getSession().setAttribute("client", client);                    
                     // User does not have a temporary password, redirect to client home page
                     response.sendRedirect("clientHome.jsp");
+                    System.out.println("Client: " + client);
                 }
             }
 
