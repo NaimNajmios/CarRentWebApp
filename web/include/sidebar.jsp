@@ -10,11 +10,10 @@
     <ul class="nav flex-column mt-3">
         <%-- My profile --%>
         <li class="nav-item">
-            <a class="nav-link" href="admin-profile.jsp">
+            <a class="nav-link <%= request.getRequestURI().contains("admin-profile.jsp") ? "active" : ""%>" href="admin-profile.jsp">
                 <i class="fas fa-user"></i>My Profile
             </a>
         </li>
-
         <li class="nav-item">
             <a class="nav-link <%= request.getRequestURI().contains("user-management.jsp") || request.getRequestURI().contains("viewUserDetails.jsp") || request.getRequestURI().contains("editUserForm.jsp") ? "active" : ""%>" href="user-management.jsp">
                 <i class="fas fa-users"></i>User Management

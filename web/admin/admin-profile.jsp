@@ -68,7 +68,7 @@
                                 <h3 class="mb-0">My Profile</h3>
                             </div>
                             <div class="card-body">
-                                <form action="UpdateAdminProfile" method="post">
+                                <form action="<%= request.getContextPath()%>/UpdateAdmin" method="post">
                                     <%-- Message --%>
                                     <div id="div_message" class="text-center mb-4" style="color: blue;">
                                         <%
