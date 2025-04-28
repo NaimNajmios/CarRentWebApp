@@ -3,13 +3,18 @@ package Report;
 import User.Client;
 import User.User;
 import User.Admin;
-
+import Booking.Booking;
+import Booking.BookingVehicle;
+import Vehicle.Vehicle;
+import Vehicle.VehicleMaintenance;
+import Payment.Payment;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import Database.DatabaseConnection;
 
 // Class to represent a report in the database
 
@@ -30,7 +35,7 @@ public class Report {
     // Duration (today/yesterday/last 7 days/this month/last month)
     private String duration;
 
-    // Optional filter (depends on tpyes of report)
+    // Optional filter (depends on types of report)
 
 }
 

@@ -57,7 +57,7 @@
                                     <div class="tab-pane fade show active" id="booking" role="tabpanel" aria-labelledby="booking-tab">
                                         <div class="report-form">
                                             <h5>Booking Reports</h5>
-                                            <form action="GenerateReportServlet" method="post">
+                                            <form action="<%= request.getContextPath()%>/GenerateReport" method="post">
                                                 <input type="hidden" name="reportCategory" value="booking">
                                                 <div class="report-type-group">
                                                     <h6>Report Type</h6>
@@ -143,7 +143,7 @@
                                     <div class="tab-pane fade" id="vehicle" role="tabpanel" aria-labelledby="vehicle-tab">
                                         <div class="report-form">
                                             <h5>Vehicle Reports</h5>
-                                            <form action="GenerateReportServlet" method="post">
+                                            <form action="<%= request.getContextPath()%>/GenerateReport" method="post">
                                                 <input type="hidden" name="reportCategory" value="vehicle">
                                                 <div class="report-type-group">
                                                     <h6>Report Type</h6>
@@ -218,7 +218,7 @@
                                     <div class="tab-pane fade" id="payment" role="tabpanel" aria-labelledby="payment-tab">
                                         <div class="report-form">
                                             <h5>Payment Reports</h5>
-                                            <form action="GenerateReportServlet" method="post">
+                                            <form action="<%= request.getContextPath()%>/GenerateReport" method="post">
                                                 <input type="hidden" name="reportCategory" value="payment">
                                                 <div class="report-type-group">
                                                     <h6>Report Type</h6>
@@ -304,7 +304,7 @@
                                     <div class="tab-pane fade" id="maintenance" role="tabpanel" aria-labelledby="maintenance-tab">
                                         <div class="report-form">
                                             <h5>Maintenance Reports</h5>
-                                            <form action="GenerateReportServlet" method="post">
+                                            <form action="<%= request.getContextPath()%>/GenerateReport" method="post">
                                                 <input type="hidden" name="reportCategory" value="maintenance">
                                                 <div class="report-type-group">
                                                     <h6>Report Type</h6>
@@ -376,7 +376,7 @@
                                     <div class="tab-pane fade" id="user" role="tabpanel" aria-labelledby="user-tab">
                                         <div class="report-form">
                                             <h5>User Reports</h5>
-                                            <form action="GenerateReportServlet" method="post">
+                                            <form action="<%= request.getContextPath()%>/GenerateReport" method="post">
                                                 <input type="hidden" name="reportCategory" value="user">
                                                 <div class="report-type-group">
                                                     <h6>Report Type</h6>

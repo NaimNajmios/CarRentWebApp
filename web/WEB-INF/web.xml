@@ -36,6 +36,10 @@
         <servlet-name>ResetTempPassServlet</servlet-name>
         <servlet-class>ResetTempPassServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>GenerateReportServlet</servlet-name>
+        <servlet-class>GenerateReportServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>UpdateClientServlet</servlet-name>
         <url-pattern>/UpdateClient</url-pattern>
@@ -71,6 +75,10 @@
     <servlet-mapping>
         <servlet-name>ResetTempPassServlet</servlet-name>
         <url-pattern>/ResetTempPass</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>GenerateReportServlet</servlet-name>
+        <url-pattern>/GenerateReport</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
