@@ -8,7 +8,6 @@
         <link href="https://fonts.googleapis.com/css?family=DM+Sans:300,400,700&display=swap" rel="stylesheet">
         <%@ include file="../include/admin-styling.html" %>
         <%@ include file="../include/admin-report-styling.html" %>
-
     </head>
     <body data-spy="scroll" data-target=".site-navbar-target" data-offset="300">
         <div class="site-wrap" id="reports-section">
@@ -57,7 +56,7 @@
                                     <div class="tab-pane fade show active" id="booking" role="tabpanel" aria-labelledby="booking-tab">
                                         <div class="report-form">
                                             <h5>Booking Reports</h5>
-                                            <form action="<%= request.getContextPath()%>/GenerateReport" method="post">
+                                            <form action="<%= request.getContextPath()%>/GenerateReport" method="post" target="_blank">
                                                 <input type="hidden" name="reportCategory" value="booking">
                                                 <div class="report-type-group">
                                                     <h6>Report Type</h6>
@@ -95,7 +94,7 @@
                                                             <label for="bookingLastMonth">Last Month</label>
                                                         </div>
                                                         <div>
-                                                            <input type="radio" id="bookingCustom" name="dateRangeType" value="custom" checked>
+                                                            <input type="radio" id="bookingCustom" name="dateRangeType" value="custom">
                                                             <label for="bookingCustom">Custom</label>
                                                         </div>
                                                     </div>
@@ -105,11 +104,11 @@
                                                     <div class="row">
                                                         <div class="col-md-6">
                                                             <label for="bookingStartDate">Start Date</label>
-                                                            <input type="text" class="form-control datepicker" id="bookingStartDate" name="startDate" placeholder="Select start date">
+                                                            <input type="text" class="form-control datepicker" id="bookingStartDate" name="startDate" placeholder="Select start date" disabled>
                                                         </div>
                                                         <div class="col-md-6">
                                                             <label for="bookingEndDate">End Date</label>
-                                                            <input type="text" class="form-control datepicker" id="bookingEndDate" name="endDate" placeholder="Select end date">
+                                                            <input type="text" class="form-control datepicker" id="bookingEndDate" name="endDate" placeholder="Select end date" disabled>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -136,6 +135,22 @@
                                                 </div>
                                                 <button type="submit" class="btn btn-primary">Generate Report</button>
                                             </form>
+                                            <script>
+                                                // Booking tab: Enable/disable custom date fields
+                                                document.querySelectorAll('input[name="dateRangeType"]').forEach(function(radio) {
+                                                    radio.addEventListener('change', function() {
+                                                        const startDateInput = document.getElementById('bookingStartDate');
+                                                        const endDateInput = document.getElementById('bookingEndDate');
+                                                        const isCustom = this.value === 'custom';
+                                                        startDateInput.disabled = !isCustom;
+                                                        endDateInput.disabled = !isCustom;
+                                                        if (!isCustom) {
+                                                            startDateInput.value = '';
+                                                            endDateInput.value = '';
+                                                        }
+                                                    });
+                                                });
+                                            </script>
                                         </div>
                                     </div>
 
@@ -143,7 +158,7 @@
                                     <div class="tab-pane fade" id="vehicle" role="tabpanel" aria-labelledby="vehicle-tab">
                                         <div class="report-form">
                                             <h5>Vehicle Reports</h5>
-                                            <form action="<%= request.getContextPath()%>/GenerateReport" method="post">
+                                            <form action="<%= request.getContextPath()%>/GenerateReport" method="post" target="_blank">
                                                 <input type="hidden" name="reportCategory" value="vehicle">
                                                 <div class="report-type-group">
                                                     <h6>Report Type</h6>
@@ -171,7 +186,7 @@
                                                             <label for="vehicleLastMonth">Last Month</label>
                                                         </div>
                                                         <div>
-                                                            <input type="radio" id="vehicleCustom" name="dateRangeType" value="custom" checked>
+                                                            <input type="radio" id="vehicleCustom" name="dateRangeType" value="custom">
                                                             <label for="vehicleCustom">Custom</label>
                                                         </div>
                                                     </div>
@@ -181,11 +196,11 @@
                                                     <div class="row">
                                                         <div class="col-md-6">
                                                             <label for="vehicleStartDate">Start Date (for Usage/Performance)</label>
-                                                            <input type="text" class="form-control datepicker" id="vehicleStartDate" name="startDate" placeholder="Select start date">
+                                                            <input type="text" class="form-control datepicker" id="vehicleStartDate" name="startDate" placeholder="Select start date" disabled>
                                                         </div>
                                                         <div class="col-md-6">
                                                             <label for="vehicleEndDate">End Date (for Usage/Performance)</label>
-                                                            <input type="text" class="form-control datepicker" id="vehicleEndDate" name="endDate" placeholder="Select end date">
+                                                            <input type="text" class="form-control datepicker" id="vehicleEndDate" name="endDate" placeholder="Select end date" disabled>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -211,6 +226,22 @@
                                                 </div>
                                                 <button type="submit" class="btn btn-primary">Generate Report</button>
                                             </form>
+                                            <script>
+                                                // Vehicle tab: Enable/disable custom date fields
+                                                document.querySelectorAll('#vehicle input[name="dateRangeType"]').forEach(function(radio) {
+                                                    radio.addEventListener('change', function() {
+                                                        const startDateInput = document.getElementById('vehicleStartDate');
+                                                        const endDateInput = document.getElementById('vehicleEndDate');
+                                                        const isCustom = this.value === 'custom';
+                                                        startDateInput.disabled = !isCustom;
+                                                        endDateInput.disabled = !isCustom;
+                                                        if (!isCustom) {
+                                                            startDateInput.value = '';
+                                                            endDateInput.value = '';
+                                                        }
+                                                    });
+                                                });
+                                            </script>
                                         </div>
                                     </div>
 
@@ -218,7 +249,7 @@
                                     <div class="tab-pane fade" id="payment" role="tabpanel" aria-labelledby="payment-tab">
                                         <div class="report-form">
                                             <h5>Payment Reports</h5>
-                                            <form action="<%= request.getContextPath()%>/GenerateReport" method="post">
+                                            <form action="<%= request.getContextPath()%>/GenerateReport" method="post" target="_blank">
                                                 <input type="hidden" name="reportCategory" value="payment">
                                                 <div class="report-type-group">
                                                     <h6>Report Type</h6>
@@ -256,7 +287,7 @@
                                                             <label for="paymentLastMonth">Last Month</label>
                                                         </div>
                                                         <div>
-                                                            <input type="radio" id="paymentCustom" name="dateRangeType" value="custom" checked>
+                                                            <input type="radio" id="paymentCustom" name="dateRangeType" value="custom">
                                                             <label for="paymentCustom">Custom</label>
                                                         </div>
                                                     </div>
@@ -266,11 +297,11 @@
                                                     <div class="row">
                                                         <div class="col-md-6">
                                                             <label for="paymentStartDate">Start Date</label>
-                                                            <input type="text" class="form-control datepicker" id="paymentStartDate" name="startDate" placeholder="Select start date">
+                                                            <input type="text" class="form-control datepicker" id="paymentStartDate" name="startDate" placeholder="Select start date" disabled>
                                                         </div>
                                                         <div class="col-md-6">
                                                             <label for="paymentEndDate">End Date</label>
-                                                            <input type="text" class="form-control datepicker" id="paymentEndDate" name="endDate" placeholder="Select end date">
+                                                            <input type="text" class="form-control datepicker" id="paymentEndDate" name="endDate" placeholder="Select end date" disabled>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -297,6 +328,22 @@
                                                 </div>
                                                 <button type="submit" class="btn btn-primary">Generate Report</button>
                                             </form>
+                                            <script>
+                                                // Payment tab: Enable/disable custom date fields
+                                                document.querySelectorAll('#payment input[name="dateRangeType"]').forEach(function(radio) {
+                                                    radio.addEventListener('change', function() {
+                                                        const startDateInput = document.getElementById('paymentStartDate');
+                                                        const endDateInput = document.getElementById('paymentEndDate');
+                                                        const isCustom = this.value === 'custom';
+                                                        startDateInput.disabled = !isCustom;
+                                                        endDateInput.disabled = !isCustom;
+                                                        if (!isCustom) {
+                                                            startDateInput.value = '';
+                                                            endDateInput.value = '';
+                                                        }
+                                                    });
+                                                });
+                                            </script>
                                         </div>
                                     </div>
 
@@ -304,7 +351,7 @@
                                     <div class="tab-pane fade" id="maintenance" role="tabpanel" aria-labelledby="maintenance-tab">
                                         <div class="report-form">
                                             <h5>Maintenance Reports</h5>
-                                            <form action="<%= request.getContextPath()%>/GenerateReport" method="post">
+                                            <form action="<%= request.getContextPath()%>/GenerateReport" method="post" target="_blank">
                                                 <input type="hidden" name="reportCategory" value="maintenance">
                                                 <div class="report-type-group">
                                                     <h6>Report Type</h6>
@@ -330,7 +377,7 @@
                                                             <label for="maintenanceLastMonth">Last Month</label>
                                                         </div>
                                                         <div>
-                                                            <input type="radio" id="maintenanceCustom" name="dateRangeType" value="custom" checked>
+                                                            <input type="radio" id="maintenanceCustom" name="dateRangeType" value="custom">
                                                             <label for="maintenanceCustom">Custom</label>
                                                         </div>
                                                     </div>
@@ -340,11 +387,11 @@
                                                     <div class="row">
                                                         <div class="col-md-6">
                                                             <label for="maintenanceStartDate">Start Date</label>
-                                                            <input type="text" class="form-control datepicker" id="maintenanceStartDate" name="startDate" placeholder="Select start date">
+                                                            <input type="text" class="form-control datepicker" id="maintenanceStartDate" name="startDate" placeholder="Select start date" disabled>
                                                         </div>
                                                         <div class="col-md-6">
                                                             <label for="maintenanceEndDate">End Date</label>
-                                                            <input type="text" class="form-control datepicker" id="maintenanceEndDate" name="endDate" placeholder="Select end date">
+                                                            <input type="text" class="form-control datepicker" id="maintenanceEndDate" name="endDate" placeholder="Select end date" disabled>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -369,6 +416,22 @@
                                                 </div>
                                                 <button type="submit" class="btn btn-primary">Generate Report</button>
                                             </form>
+                                            <script>
+                                                // Maintenance tab: Enable/disable custom date fields
+                                                document.querySelectorAll('#maintenance input[name="dateRangeType"]').forEach(function(radio) {
+                                                    radio.addEventListener('change', function() {
+                                                        const startDateInput = document.getElementById('maintenanceStartDate');
+                                                        const endDateInput = document.getElementById('maintenanceEndDate');
+                                                        const isCustom = this.value === 'custom';
+                                                        startDateInput.disabled = !isCustom;
+                                                        endDateInput.disabled = !isCustom;
+                                                        if (!isCustom) {
+                                                            startDateInput.value = '';
+                                                            endDateInput.value = '';
+                                                        }
+                                                    });
+                                                });
+                                            </script>
                                         </div>
                                     </div>
 
@@ -376,7 +439,7 @@
                                     <div class="tab-pane fade" id="user" role="tabpanel" aria-labelledby="user-tab">
                                         <div class="report-form">
                                             <h5>User Reports</h5>
-                                            <form action="<%= request.getContextPath()%>/GenerateReport" method="post">
+                                            <form action="<%= request.getContextPath()%>/GenerateReport" method="post" target="_blank">
                                                 <input type="hidden" name="reportCategory" value="user">
                                                 <div class="report-type-group">
                                                     <h6>Report Type</h6>
@@ -404,7 +467,7 @@
                                                             <label for="userLast7Days">Last 7 Days</label>
                                                         </div>
                                                         <div>
-                                                            <input type="radio" id="userCustom" name="dateRangeType" value="custom" checked>
+                                                            <input type="radio" id="userCustom" name="dateRangeType" value="custom">
                                                             <label for="userCustom">Custom</label>
                                                         </div>
                                                     </div>
@@ -414,11 +477,11 @@
                                                     <div class="row">
                                                         <div class="col-md-6">
                                                             <label for="userStartDate">Start Date</label>
-                                                            <input type="text" class="form-control datepicker" id="userStartDate" name="startDate" placeholder="Select start date">
+                                                            <input type="text" class="form-control datepicker" id="userStartDate" name="startDate" placeholder="Select start date" disabled>
                                                         </div>
                                                         <div class="col-md-6">
                                                             <label for="userEndDate">End Date</label>
-                                                            <input type="text" class="form-control datepicker" id="userEndDate" name="endDate" placeholder="Select end date">
+                                                            <input type="text" class="form-control datepicker" id="userEndDate" name="endDate" placeholder="Select end date" disabled>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -435,6 +498,22 @@
                                                 </div>
                                                 <button type="submit" class="btn btn-primary">Generate Report</button>
                                             </form>
+                                            <script>
+                                                // User tab: Enable/disable custom date fields
+                                                document.querySelectorAll('#user input[name="dateRangeType"]').forEach(function(radio) {
+                                                    radio.addEventListener('change', function() {
+                                                        const startDateInput = document.getElementById('userStartDate');
+                                                        const endDateInput = document.getElementById('userEndDate');
+                                                        const isCustom = this.value === 'custom';
+                                                        startDateInput.disabled = !isCustom;
+                                                        endDateInput.disabled = !isCustom;
+                                                        if (!isCustom) {
+                                                            startDateInput.value = '';
+                                                            endDateInput.value = '';
+                                                        }
+                                                    });
+                                                });
+                                            </script>
                                         </div>
                                     </div>
                                 </div>
@@ -444,5 +523,6 @@
                 </div>
             </div>
             <%@ include file="../include/admin-js.html" %>
+        </div>
     </body>
 </html>

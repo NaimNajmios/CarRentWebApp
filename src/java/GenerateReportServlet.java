@@ -5,7 +5,6 @@
 
 import Database.DatabaseConnection;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -55,16 +54,17 @@ public class GenerateReportServlet extends HttpServlet {
         String dateRangeType = request.getParameter("dateRangeType");
         String startDate = request.getParameter("startDate");
         String endDate = request.getParameter("endDate");
-        String role = request.getParameter("role");
+        String role = request.getParameter("role"); // For user reports
 
         // Log form parameters
         LOGGER.log(Level.INFO, "Form Parameters: reportCategory={0}, reportType={1}, dateRangeType={2}, startDate={3}, endDate={4}, role={5}",
                 new Object[]{reportCategory, reportType, dateRangeType, startDate, endDate, role});
 
-        // Validate report category
-        if (!"user".equals(reportCategory)) {
-            LOGGER.log(Level.WARNING, "Invalid report category: {0}. Expected 'user'.", reportCategory);
-            request.setAttribute("error", "This servlet only handles user reports.");
+        // Validate report category and type
+        if (reportCategory == null || reportType == null) {
+            LOGGER.log(Level.WARNING, "Missing report category or type: reportCategory={0}, reportType={1}",
+                    new Object[]{reportCategory, reportType});
+            request.setAttribute("error", "Report category and type are required.");
             request.getRequestDispatcher("/error.jsp").forward(request, response);
             return;
         }
@@ -75,7 +75,7 @@ public class GenerateReportServlet extends HttpServlet {
         LocalDate today = LocalDate.now();
         LOGGER.log(Level.INFO, "Today's date: {0}", today);
 
-        switch (dateRangeType) {
+        switch (dateRangeType != null ? dateRangeType : "custom") {
             case "this_month":
                 start = today.withDayOfMonth(1);
                 end = today;
@@ -112,8 +112,9 @@ public class GenerateReportServlet extends HttpServlet {
         params.add(start.toString());
         params.add(end.toString());
 
-        // Build query and collect parameters for "Detailed Registrations"
+        // Build query and collect parameters based on report category and type
         String query = "";
+        String reportTitle = "";
         Map<String, String> headers = new HashMap<>();
         List<Map<String, Object>> results = new ArrayList<>();
 
@@ -124,32 +125,133 @@ public class GenerateReportServlet extends HttpServlet {
             conn = DatabaseConnection.getConnection();
             LOGGER.log(Level.INFO, "Database connection established successfully.");
 
-            // Handle "Detailed Registrations" report
-            if (!role.isEmpty()) {
-                params.add(role);
-            }
+            // Handle different report categories and types
+            switch (reportCategory) {
+                case "user":
+                    switch (reportType) {
+                        case "detailed_registrations":
+                            reportTitle = "USER - DETAILED REGISTRATIONS";
+                            if (role != null && !role.isEmpty()) {
+                                params.add(role);
+                            }
+                            query = "SELECT u.userID, u.username, u.password, u.role, u.createdAt, "
+                                    + "c.name, c.email, c.phoneNumber, a.email AS adminEmail "
+                                    + "FROM user u "
+                                    + "LEFT JOIN client c ON u.userID = c.userID "
+                                    + "LEFT JOIN administrator a ON u.userID = a.userID "
+                                    + "WHERE u.createdAt BETWEEN ? AND ? "
+                                    + (role != null && !role.isEmpty() ? "AND u.role = ?" : "");
+                            headers.put("userID", "User ID");
+                            headers.put("username", "Username");
+                            headers.put("password", "Password");
+                            headers.put("role", "Role");
+                            headers.put("createdAt", "Created At");
+                            headers.put("name", "Name");
+                            headers.put("email", "Client Email");
+                            headers.put("phoneNumber", "Phone Number");
+                            headers.put("adminEmail", "Admin Email");
+                            break;
 
-            query = "SELECT u.userID, u.username, u.password, u.role, u.createdAt, "
-                    + "c.name, c.email, c.phoneNumber, a.email AS adminEmail "
-                    + "FROM user u "
-                    + "LEFT JOIN client c ON u.userID = c.userID "
-                    + "LEFT JOIN administrator a ON u.userID = a.userID "
-                    + "WHERE u.createdAt BETWEEN ? AND ? "
-                    + (role.isEmpty() ? "" : "AND u.role = ?");
+                        case "summary":
+                            reportTitle = "USER - SUMMARY";
+                            query = "SELECT u.role, COUNT(*) AS userCount "
+                                    + "FROM user u "
+                                    + "WHERE u.createdAt BETWEEN ? AND ? "
+                                    + "GROUP BY u.role";
+                            headers.put("role", "Role");
+                            headers.put("userCount", "User Count");
+                            break;
+
+                        default:
+                            LOGGER.log(Level.WARNING, "Invalid report type for user category: {0}", reportType);
+                            request.setAttribute("error", "Invalid report type for user category.");
+                            request.getRequestDispatcher("/error.jsp").forward(request, response);
+                            return;
+                    }
+                    break;
+
+                case "vehicle":
+                    switch (reportType) {
+                        case "detailed_inventory":
+                            reportTitle = "VEHICLE - DETAILED INVENTORY";
+                            query = "SELECT v.vehicleID, v.vehicleName, v.vehicleType, v.vehicleStatus, v.rentalRate, "
+                                    + "v.createdAt "
+                                    + "FROM vehicle v "
+                                    + "WHERE v.createdAt BETWEEN ? AND ?";
+                            headers.put("vehicleID", "Vehicle ID");
+                            headers.put("vehicleName", "Vehicle Name");
+                            headers.put("vehicleType", "Vehicle Type");
+                            headers.put("vehicleStatus", "Status");
+                            headers.put("rentalRate", "Rental Rate");
+                            headers.put("createdAt", "Created At");
+                            break;
+
+                        case "availability_summary":
+                            reportTitle = "VEHICLE - AVAILABILITY SUMMARY";
+                            query = "SELECT v.vehicleStatus, COUNT(*) AS vehicleCount "
+                                    + "FROM vehicle v "
+                                    + "WHERE v.createdAt BETWEEN ? AND ? "
+                                    + "GROUP BY v.vehicleStatus";
+                            headers.put("vehicleStatus", "Status");
+                            headers.put("vehicleCount", "Vehicle Count");
+                            break;
+
+                        default:
+                            LOGGER.log(Level.WARNING, "Invalid report type for vehicle category: {0}", reportType);
+                            request.setAttribute("error", "Invalid report type for vehicle category.");
+                            request.getRequestDispatcher("/error.jsp").forward(request, response);
+                            return;
+                    }
+                    break;
+
+                case "rental":
+                    switch (reportType) {
+                        case "detailed_rentals":
+                            reportTitle = "RENTAL - DETAILED RENTALS";
+                            query = "SELECT r.rentalID, r.vehicleID, v.vehicleName, r.clientID, c.name AS clientName, "
+                                    + "r.rentalDate, r.returnDate, r.totalCost "
+                                    + "FROM rental r "
+                                    + "JOIN vehicle v ON r.vehicleID = v.vehicleID "
+                                    + "JOIN client c ON r.clientID = c.userID "
+                                    + "WHERE r.rentalDate BETWEEN ? AND ?";
+                            headers.put("rentalID", "Rental ID");
+                            headers.put("vehicleID", "Vehicle ID");
+                            headers.put("vehicleName", "Vehicle Name");
+                            headers.put("clientID", "Client ID");
+                            headers.put("clientName", "Client Name");
+                            headers.put("rentalDate", "Rental Date");
+                            headers.put("returnDate", "Return Date");
+                            headers.put("totalCost", "Total Cost");
+                            break;
+
+                        case "revenue_summary":
+                            reportTitle = "RENTAL - REVENUE SUMMARY";
+                            query = "SELECT DATE(r.rentalDate) AS rentalDay, SUM(r.totalCost) AS totalRevenue "
+                                    + "FROM rental r "
+                                    + "WHERE r.rentalDate BETWEEN ? AND ? "
+                                    + "GROUP BY DATE(r.rentalDate)";
+                            headers.put("rentalDay", "Rental Day");
+                            headers.put("totalRevenue", "Total Revenue");
+                            break;
+
+                        default:
+                            LOGGER.log(Level.WARNING, "Invalid report type for rental category: {0}", reportType);
+                            request.setAttribute("error", "Invalid report type for rental category.");
+                            request.getRequestDispatcher("/error.jsp").forward(request, response);
+                            return;
+                    }
+                    break;
+
+                default:
+                    LOGGER.log(Level.WARNING, "Invalid report category: {0}", reportCategory);
+                    request.setAttribute("error", "Invalid report category.");
+                    request.getRequestDispatcher("/error.jsp").forward(request, response);
+                    return;
+            }
 
             // Log the query and parameters
             LOGGER.log(Level.INFO, "Executing query: {0}", query);
             LOGGER.log(Level.INFO, "Query parameters: {0}", params);
-
-            headers.put("userID", "User ID");
-            headers.put("username", "Username");
-            headers.put("password", "Password");
-            headers.put("role", "Role");
-            headers.put("createdAt", "Created At");
-            headers.put("name", "Name");
-            headers.put("email", "Client Email");
-            headers.put("phoneNumber", "Phone Number");
-            headers.put("adminEmail", "Admin Email");
 
             // Execute query and collect results
             try (PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -172,14 +274,13 @@ public class GenerateReportServlet extends HttpServlet {
             LOGGER.log(Level.INFO, "Query executed successfully. Number of results: {0}", results.size());
 
             // Set attributes and forward to JSP for rendering
-            request.setAttribute("reportTitle", "USER - DETAILED REGISTRATIONS");
+            request.setAttribute("reportTitle", reportTitle);
             request.setAttribute("headers", headers);
             request.setAttribute("results", results);
-            LOGGER.log(Level.INFO, "Forwarding to /admin/reportResults.jsp");
-            // Log to be fetched data
-            LOGGER.log(Level.INFO, "reportTitle set to: {0}", request.getAttribute("reportTitle"));
+            LOGGER.log(Level.INFO, "reportTitle set to: {0}", reportTitle);
             LOGGER.log(Level.INFO, "headers set to: {0}", headers);
             LOGGER.log(Level.INFO, "results set to: {0}", results);
+            LOGGER.log(Level.INFO, "Forwarding to /admin/reportResults.jsp with attributes set");
             request.getRequestDispatcher("/admin/reportResults.jsp").forward(request, response);
 
         } catch (SQLException | ClassNotFoundException e) {
@@ -200,15 +301,6 @@ public class GenerateReportServlet extends HttpServlet {
         }
     }
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /**
-     * Handles the HTTP <code>GET</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -219,14 +311,6 @@ public class GenerateReportServlet extends HttpServlet {
         }
     }
 
-    /**
-     * Handles the HTTP <code>POST</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -237,13 +321,8 @@ public class GenerateReportServlet extends HttpServlet {
         }
     }
 
-    /**
-     * Returns a short description of the servlet.
-     *
-     * @return a String containing servlet description
-     */
     @Override
     public String getServletInfo() {
         return "Servlet for generating user reports";
-    }// </editor-fold>
+    }
 }
