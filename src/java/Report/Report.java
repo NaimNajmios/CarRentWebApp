@@ -120,12 +120,6 @@ public class Report {
 
         // Prepare parameters for SQL query
         List<Object> params = new ArrayList<>();
-        if (!reportCategory.equals("vehicle") || !reportType.equals("vehicle_list")) {
-            params.add(start.toString());
-            params.add(end.toString());
-        }
-
-        // Build query and collect parameters
         String query = "";
         String reportTitle = "";
         Map<String, String> headers = new HashMap<>();
@@ -144,6 +138,8 @@ public class Report {
                     switch (reportType) {
                         case "detailed_registrations":
                             reportTitle = "USER - DETAILED REGISTRATIONS";
+                            params.add(start.toString());
+                            params.add(end.toString());
                             if (role != null && !role.isEmpty()) {
                                 params.add(role);
                             }
@@ -167,6 +163,8 @@ public class Report {
 
                         case "summary":
                             reportTitle = "USER - SUMMARY";
+                            params.add(start.toString());
+                            params.add(end.toString());
                             query = "SELECT u.role, COUNT(*) AS userCount "
                                     + "FROM user u "
                                     + "WHERE u.createdAt BETWEEN ? AND ? "
@@ -233,6 +231,8 @@ public class Report {
                                     + "LEFT JOIN booking b ON bv.bookingID = b.bookingID "
                                     + "AND b.startDate BETWEEN ? AND ? "
                                     + "WHERE 1=1 ");
+                            params.add(start.toString());
+                            params.add(end.toString());
                             if (category != null && !category.isEmpty()) {
                                 usageQuery.append("AND v.category = ? ");
                                 params.add(category);
@@ -279,6 +279,8 @@ public class Report {
                                     + "LEFT JOIN booking b ON bv.bookingID = b.bookingID "
                                     + "AND b.startDate BETWEEN ? AND ? "
                                     + "WHERE 1=1 ");
+                            params.add(start.toString());
+                            params.add(end.toString());
                             if (category != null && !category.isEmpty()) {
                                 perfQuery.append("AND v.category = ? ");
                                 params.add(category);
@@ -313,6 +315,8 @@ public class Report {
                                     + "JOIN vehicles v ON bv.vehicleID = v.vehicleID "
                                     + "JOIN client c ON b.clientID = c.clientID "
                                     + "WHERE b.startDate BETWEEN ? AND ? ");
+                            params.add(start.toString());
+                            params.add(end.toString());
                             if (bookingStatus != null && !bookingStatus.isEmpty()) {
                                 bookingQuery.append("AND b.bookingStatus = ? ");
                                 params.add(bookingStatus);
@@ -340,6 +344,8 @@ public class Report {
                                     + "FROM booking b "
                                     + "JOIN bookingvehicle bv ON b.bookingID = bv.bookingID "
                                     + "WHERE b.startDate BETWEEN ? AND ? ");
+                            params.add(start.toString());
+                            params.add(end.toString());
                             if (vehicleId != null && !vehicleId.isEmpty()) {
                                 summaryQuery.append("AND bv.vehicleID = ? ");
                                 params.add(vehicleId);
@@ -358,6 +364,8 @@ public class Report {
                                     + "JOIN bookingvehicle bv ON b.bookingID = bv.bookingID "
                                     + "JOIN client c ON b.clientID = c.clientID "
                                     + "WHERE b.startDate BETWEEN ? AND ? ");
+                            params.add(start.toString());
+                            params.add(end.toString());
                             if (bookingStatus != null && !bookingStatus.isEmpty()) {
                                 clientQuery.append("AND b.bookingStatus = ? ");
                                 params.add(bookingStatus);
@@ -390,6 +398,8 @@ public class Report {
                                     + "JOIN booking b ON p.bookingID = b.bookingID "
                                     + "JOIN client c ON b.clientID = c.clientID "
                                     + "WHERE p.paymentDate BETWEEN ? AND ? ");
+                            params.add(start.toString());
+                            params.add(end.toString());
                             if (paymentType != null && !paymentType.isEmpty()) {
                                 paymentQuery.append("AND p.paymentType = ? ");
                                 params.add(paymentType);
@@ -415,6 +425,8 @@ public class Report {
                                     "SELECT p.paymentStatus, COUNT(*) AS paymentCount, SUM(p.amount) AS totalAmount "
                                     + "FROM payment p "
                                     + "WHERE p.paymentDate BETWEEN ? AND ? ");
+                            params.add(start.toString());
+                            params.add(end.toString());
                             if (paymentType != null && !paymentType.isEmpty()) {
                                 paymentSummaryQuery.append("AND p.paymentType = ? ");
                                 params.add(paymentType);
@@ -433,6 +445,8 @@ public class Report {
                                     + "WHERE p.paymentDate BETWEEN ? AND ? "
                                     + (paymentStatus != null && !paymentStatus.isEmpty() ? "AND p.paymentStatus = ? " : "")
                                     + "GROUP BY p.paymentType";
+                            params.add(start.toString());
+                            params.add(end.toString());
                             if (paymentStatus != null && !paymentStatus.isEmpty()) {
                                 params.add(paymentStatus);
                             }
@@ -454,6 +468,8 @@ public class Report {
                                     + "FROM vehiclemaintenance m "
                                     + "JOIN vehicles v ON m.vehicleID = v.vehicleID "
                                     + "WHERE m.maintenanceDate BETWEEN ? AND ? ");
+                            params.add(start.toString());
+                            params.add(end.toString());
                             if (maintenanceStatus != null && !maintenanceStatus.isEmpty()) {
                                 scheduleQuery.append("AND m.maintenanceStatus = ? ");
                                 params.add(maintenanceStatus);
@@ -478,6 +494,8 @@ public class Report {
                                     + "FROM vehiclemaintenance m "
                                     + "JOIN vehicles v ON m.vehicleID = v.vehicleID "
                                     + "WHERE m.maintenanceDate BETWEEN ? AND ? ");
+                            params.add(start.toString());
+                            params.add(end.toString());
                             if (maintenanceStatus != null && !maintenanceStatus.isEmpty()) {
                                 historyQuery.append("AND m.maintenanceStatus = ? ");
                                 params.add(maintenanceStatus);
@@ -486,6 +504,7 @@ public class Report {
                                 historyQuery.append("AND m.vehicleID = ? ");
                                 params.add(vehicleId);
                             }
+                            historyQuery.toString();
                             query = historyQuery.toString();
                             headers.put("maintenanceID", "Maintenance ID");
                             headers.put("vehicleID", "Vehicle ID");
@@ -503,6 +522,8 @@ public class Report {
                                     + "FROM vehiclemaintenance m "
                                     + "JOIN vehicles v ON m.vehicleID = v.vehicleID "
                                     + "WHERE m.maintenanceDate BETWEEN ? AND ? ");
+                            params.add(start.toString());
+                            params.add(end.toString());
                             if (maintenanceStatus != null && !maintenanceStatus.isEmpty()) {
                                 costQuery.append("AND m.maintenanceStatus = ? ");
                                 params.add(maintenanceStatus);
@@ -535,6 +556,8 @@ public class Report {
                                     + "JOIN vehicles v ON bv.vehicleID = v.vehicleID "
                                     + "JOIN client c ON b.clientID = c.clientID "
                                     + "WHERE b.startDate BETWEEN ? AND ?";
+                            params.add(start.toString());
+                            params.add(end.toString());
                             headers.put("bookingID", "Booking ID");
                             headers.put("vehicleID", "Vehicle ID");
                             headers.put("model", "Vehicle Model");
@@ -551,6 +574,8 @@ public class Report {
                                     + "FROM booking b "
                                     + "WHERE b.startDate BETWEEN ? AND ? "
                                     + "GROUP BY DATE(b.startDate)";
+                            params.add(start.toString());
+                            params.add(end.toString());
                             headers.put("bookingDay", "Booking Day");
                             headers.put("totalRevenue", "Total Revenue");
                             break;
