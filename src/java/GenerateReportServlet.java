@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 
 import Database.DatabaseConnection;
 import java.io.IOException;
@@ -124,10 +120,13 @@ public class GenerateReportServlet extends HttpServlet {
 
         // Prepare parameters for SQL query
         List<Object> params = new ArrayList<>();
-        params.add(start.toString());
-        params.add(end.toString());
+        // Only add date parameters for reports that use them
+        if (!reportCategory.equals("vehicle") || !reportType.equals("vehicle_list")) {
+            params.add(start.toString());
+            params.add(end.toString());
+        }
 
-        // Build query and collect parameters based on report category and type
+// Build query and collect parameters based on report category and type
         String query = "";
         String reportTitle = "";
         Map<String, String> headers = new HashMap<>();
@@ -188,15 +187,14 @@ public class GenerateReportServlet extends HttpServlet {
                 case "vehicle":
                     switch (reportType) {
                         case "vehicle_list":
-                        case "detailed_inventory": // Treat vehicle_list as detailed_inventory for consistency
+                            // Treat vehicle_list as detailed_inventory for consistency
                             reportTitle = "VEHICLE - DETAILED INVENTORY";
                             StringBuilder vehicleQuery = new StringBuilder(
                                     "SELECT v.vehicleID, v.model, v.brand, v.manufacturingYear, v.availability, "
                                     + "v.category, v.fuelType, v.transmissionType, v.mileage, v.ratePerDay "
                                     + "FROM vehicles v "
                                     + "WHERE 1=1 ");
-                            // No createdAt in vehicles table, so date range filtering is not applicable here
-                            // If you meant to filter by a different date (e.g., booking dates), adjust accordingly
+
                             if (category != null && !category.isEmpty()) {
                                 vehicleQuery.append(" AND v.category = ?");
                                 params.add(category);
@@ -206,6 +204,7 @@ public class GenerateReportServlet extends HttpServlet {
                                 params.add(availability.equals("1") ? 1 : 0);
                             }
                             query = vehicleQuery.toString();
+
                             headers.put("vehicleID", "Vehicle ID");
                             headers.put("model", "Model");
                             headers.put("brand", "Brand");
@@ -225,9 +224,11 @@ public class GenerateReportServlet extends HttpServlet {
                                     + "WHERE 1=1 "
                                     + (category != null && !category.isEmpty() ? "AND v.category = ? " : "")
                                     + "GROUP BY v.availability";
+
                             if (category != null && !category.isEmpty()) {
                                 params.add(category);
                             }
+
                             headers.put("availability", "Availability");
                             headers.put("vehicleCount", "Vehicle Count");
                             break;
@@ -241,6 +242,11 @@ public class GenerateReportServlet extends HttpServlet {
                                     + "LEFT JOIN booking b ON bv.bookingID = b.bookingID "
                                     + "AND b.startDate BETWEEN ? AND ? "
                                     + "WHERE 1=1 ");
+
+                            // Add date parameters first since they're required for this report
+                            params.add(startDate);
+                            params.add(endDate);
+
                             if (category != null && !category.isEmpty()) {
                                 usageQuery.append("AND v.category = ? ");
                                 params.add(category);
@@ -249,8 +255,10 @@ public class GenerateReportServlet extends HttpServlet {
                                 usageQuery.append("AND v.availability = ? ");
                                 params.add(availability.equals("1") ? 1 : 0);
                             }
+
                             usageQuery.append("GROUP BY v.vehicleID, v.model, v.category");
                             query = usageQuery.toString();
+
                             headers.put("vehicleID", "Vehicle ID");
                             headers.put("model", "Model");
                             headers.put("category", "Category");
@@ -263,6 +271,7 @@ public class GenerateReportServlet extends HttpServlet {
                                     "SELECT v.vehicleID, v.model, v.category, v.mileage "
                                     + "FROM vehicles v "
                                     + "WHERE 1=1 ");
+
                             if (category != null && !category.isEmpty()) {
                                 mileageQuery.append("AND v.category = ? ");
                                 params.add(category);
@@ -271,7 +280,9 @@ public class GenerateReportServlet extends HttpServlet {
                                 mileageQuery.append("AND v.availability = ? ");
                                 params.add(availability.equals("1") ? 1 : 0);
                             }
+
                             query = mileageQuery.toString();
+
                             headers.put("vehicleID", "Vehicle ID");
                             headers.put("model", "Model");
                             headers.put("category", "Category");
@@ -287,6 +298,11 @@ public class GenerateReportServlet extends HttpServlet {
                                     + "LEFT JOIN booking b ON bv.bookingID = b.bookingID "
                                     + "AND b.startDate BETWEEN ? AND ? "
                                     + "WHERE 1=1 ");
+
+                            // Add date parameters first since they're required for this report
+                            params.add(startDate);
+                            params.add(endDate);
+
                             if (category != null && !category.isEmpty()) {
                                 perfQuery.append("AND v.category = ? ");
                                 params.add(category);
@@ -295,8 +311,10 @@ public class GenerateReportServlet extends HttpServlet {
                                 perfQuery.append("AND v.availability = ? ");
                                 params.add(availability.equals("1") ? 1 : 0);
                             }
+
                             perfQuery.append("GROUP BY v.vehicleID, v.model, v.category");
                             query = perfQuery.toString();
+
                             headers.put("vehicleID", "Vehicle ID");
                             headers.put("model", "Model");
                             headers.put("category", "Category");
@@ -604,12 +622,35 @@ public class GenerateReportServlet extends HttpServlet {
                     while (rs.next()) {
                         Map<String, Object> row = new HashMap<>();
                         for (String column : headers.keySet()) {
-                            Object value = rs.getObject(column);
-                            // Handle availability display
-                            if (column.equals("availability")) {
-                                value = (value != null && ((Integer) value) == 1) ? "Available" : "Not Available";
+                            try {
+                                Object value = rs.getObject(column);
+
+                                // Handle availability display with robust type checking
+                                if (column.equals("availability")) {
+                                    LOGGER.log(Level.FINE, "Processing availability field. Value type: {0}",
+                                            (value != null) ? value.getClass().getName() : "null");
+
+                                    if (value == null) {
+                                        value = "Unknown";
+                                    } else if (value instanceof Boolean) {
+                                        value = ((Boolean) value) ? "Available" : "Not Available";
+                                    } else if (value instanceof Integer) {
+                                        value = ((Integer) value == 1) ? "Available" : "Not Available";
+                                    } else if (value instanceof Number) {
+                                        // Handle other numeric types (Short, Long, etc.)
+                                        value = ((Number) value).intValue() == 1 ? "Available" : "Not Available";
+                                    } else {
+                                        LOGGER.log(Level.WARNING, "Unexpected availability value type: {0}",
+                                                value.getClass().getName());
+                                        value = "Invalid";
+                                    }
+                                }
+                                row.put(column, value);
+                            } catch (SQLException e) {
+                                LOGGER.log(Level.WARNING, "Error retrieving column {0}: {1}",
+                                        new Object[]{column, e.getMessage()});
+                                row.put(column, "Error");
                             }
-                            row.put(column, value);
                         }
                         results.add(row);
                     }
