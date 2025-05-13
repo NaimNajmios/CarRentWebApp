@@ -1,15 +1,9 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
-
 import Database.AdminOperation;
 import Database.DBOperation;
 import User.Admin;
 import User.Client;
 import User.User;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -17,6 +11,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 /**
  *
@@ -24,11 +19,12 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class LoginServlet extends HttpServlet {
 
-    DBOperation db = new DBOperation();
-    AdminOperation ao = new AdminOperation();
-    User user = new User();
-    Admin admin = new Admin();
-    Client client = new Client();
+    private static final Logger LOGGER = Logger.getLogger(LoginServlet.class.getName());
+    private final DBOperation db = new DBOperation();
+    private final AdminOperation ao = new AdminOperation();
+    private final User user = new User();
+    private Admin admin = new Admin();
+    private Client client = new Client();
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -38,59 +34,55 @@ public class LoginServlet extends HttpServlet {
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
+     * @throws NoSuchAlgorithmException if the hashing algorithm is not available
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, NoSuchAlgorithmException {
 
-        // Handles login form submission
+        LOGGER.log(Level.INFO, "Processing login request.");
+
         String username = request.getParameter("username");
         String password = request.getParameter("password");
 
+        LOGGER.log(Level.FINE, "Attempting login for username: {0}", username);
+
         if (db.validateUser(username, password)) {
-            // Login successful, redirect to home page
-            User user = db.getUser(username);
+            LOGGER.log(Level.INFO, "Login successful for user: {0}", username);
 
-            // Console log for debugging, username
-            System.out.println("Username: " + username);
+            User loggedInUser = db.getUser(username);
+            HttpSession session = request.getSession();
+            session.setAttribute("user", loggedInUser);
+            LOGGER.log(Level.FINE, "User object stored in session: {0}", loggedInUser);
 
-            // Set session attributes object for user
-            request.getSession().setAttribute("user", user);
-
-            System.out.println("User: " + user);
-
-            // Check if user is admin or client
-            if (user.getRole().equals("Administrator")) {
-                // Set session attributes object if admin
-                admin = ao.getAdminDetailsByUserID(user.getUserID());
-                request.getSession().setAttribute("admin", admin);
+            if (loggedInUser.getRole().equals("Administrator")) {
+                admin = ao.getAdminDetailsByUserID(loggedInUser.getUserID());
+                session.setAttribute("admin", admin);
+                LOGGER.log(Level.FINE, "Admin object stored in session: {0}", admin);
                 response.sendRedirect("admin/user-management.jsp");
-                System.out.println("Admin: " + admin);
+                LOGGER.log(Level.INFO, "Redirecting administrator to: admin/user-management.jsp");
             } else {
-                // Check if user has a temporary password
-                if (db.isUsingTemporaryPassword(user.getUserID())) {
-                    // Set session attributes object if client
-                    client = db.getClientDataByID(user.getUserID());
-                    request.getSession().setAttribute("client", client);                    
-                    // User has a temporary password, redirect to reset password page
+                if (db.isUsingTemporaryPassword(loggedInUser.getUserID())) {
+                    client = db.getClientDataByID(loggedInUser.getUserID());
+                    session.setAttribute("client", client);
+                    LOGGER.log(Level.FINE, "Client object stored in session (temporary password): {0}", client);
                     response.sendRedirect("reset-temp-password.jsp");
+                    LOGGER.log(Level.INFO, "Redirecting client with temporary password to: reset-temp-password.jsp");
                 } else {
-                    // Set session attributes object if client
-                    client = db.getClientDataByID(user.getUserID());
-                    request.getSession().setAttribute("client", client);                    
-                    // User does not have a temporary password, redirect to client home page
-                    response.sendRedirect("clientHome.jsp");
-                    System.out.println("Client: " + client);
+                    client = db.getClientDataByID(loggedInUser.getUserID());
+                    session.setAttribute("client", client);
+                    LOGGER.log(Level.FINE, "Client object stored in session: {0}", client);
+                    response.sendRedirect("client/index.jsp");
+                    LOGGER.log(Level.INFO, "Redirecting client to: client/index.jsp");
                 }
             }
 
         } else {
-            // Login failed, redirect to login page with error message
-            System.out.println("Login failed!");
-            response.sendRedirect("login.html?error=true");
+            LOGGER.log(Level.WARNING, "Login failed for username: {0}", username);
+            response.sendRedirect("index.jsp?error=invalid");
+            LOGGER.log(Level.INFO, "Redirecting to login page with error.");
         }
     }
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
      * Handles the HTTP <code>GET</code> method.
      *
@@ -105,7 +97,9 @@ public class LoginServlet extends HttpServlet {
         try {
             processRequest(request, response);
         } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(LoginServlet.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER.log(Level.SEVERE, "Error during GET request", ex);
+            // Consider setting an error attribute in the request and forwarding to an error page
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An unexpected error occurred.");
         }
     }
 
@@ -123,7 +117,9 @@ public class LoginServlet extends HttpServlet {
         try {
             processRequest(request, response);
         } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(LoginServlet.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER.log(Level.SEVERE, "Error during POST request", ex);
+            // Consider setting an error attribute in the request and forwarding to an error page
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An unexpected error occurred.");
         }
     }
 
@@ -134,7 +130,6 @@ public class LoginServlet extends HttpServlet {
      */
     @Override
     public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
-
+        return "Handles user login authentication and redirection.";
+    }
 }

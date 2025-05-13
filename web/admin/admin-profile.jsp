@@ -14,6 +14,7 @@
     String userid = "";
     String adminName = "";
     String adminEmail = "";
+    String profilePicturePath = "";
 
     // Reassign object passed in session
     user = (User)session.getAttribute("user");
@@ -24,12 +25,14 @@
         userid = admin.getUserID();
         adminName = admin.getName();
         adminEmail = admin.getEmail();
+        profilePicturePath = admin.getProfileImagePath() != null && !admin.getProfileImagePath().isEmpty() 
+                            ? admin.getProfileImagePath() 
+                            : "images/profile/default_profile.jpg";
     } else if (admin != null) {
         // Redirect to user management
         response.sendRedirect("user-management.jsp");
         return;
     }
-
 %>
 
 <!DOCTYPE html>
@@ -41,6 +44,20 @@
         <link href="https://fonts.googleapis.com/css?family=DM+Sans:300,400,700&display=swap" rel="stylesheet">
         <!-- Fixed Paths for CSS -->
         <%@ include file="../include/admin-styling.html" %>
+        <style>
+            .profile-picture-container {
+                text-align: center;
+                margin-bottom: 1.5rem;
+            }
+            .profile-picture {
+                width: 150px;
+                height: 150px;
+                object-fit: cover;
+                border-radius: 50%;
+                border: 2px solid #ddd;
+                margin-bottom: 1rem;
+            }
+        </style>
     </head>
     <body data-spy="scroll" data-target=".site-navbar-target" data-offset="300">
         <div class="site-wrap" id="profile-section">
@@ -68,7 +85,7 @@
                                 <h3 class="mb-0">My Profile</h3>
                             </div>
                             <div class="card-body">
-                                <form action="<%= request.getContextPath()%>/UpdateAdmin" method="post">
+                                <form action="<%= request.getContextPath()%>/UpdateAdmin" method="post" enctype="multipart/form-data">
                                     <%-- Message --%>
                                     <div id="div_message" class="text-center mb-4" style="color: blue;">
                                         <%
@@ -77,6 +94,14 @@
                                                 out.print(message);
                                             }
                                         %>
+                                    </div>
+                                    <%-- Profile Picture Section --%>
+                                    <div class="form-group mb-3 profile-picture-container">
+                                        <label for="profilePicture">Profile Picture</label><br>
+                                        <img src="<%= request.getContextPath()%>/<%= profilePicturePath %>" alt="Profile Picture" class="profile-picture">
+                                        <div>
+                                            <input type="file" class="form-control-file" id="profilePicture" name="profilePicture" accept="image/*">
+                                        </div>
                                     </div>
                                     <div class="form-group mb-3">
                                         <label for="adminID">Admin ID</label>

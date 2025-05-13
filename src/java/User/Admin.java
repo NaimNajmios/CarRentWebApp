@@ -6,6 +6,7 @@ public class Admin {
     private String adminID;
     private String name;
     private String email;
+    private String profileImagePath;
 
     public Admin() {
     }
@@ -43,10 +44,17 @@ public class Admin {
         this.email = email;
     }
 
+    public String getProfileImagePath() {
+        return this.profileImagePath;
+    }
+
+    public void setProfileImagePath(String profileImagePath) {
+        this.profileImagePath = profileImagePath;
+    }
 
     @Override
     public String toString() {
-        return "Admin{" + "userID=" + userID + ", adminID=" + adminID + ", name=" + name + ", email=" + email + '}';
+        return "Admin{" + "userID=" + userID + ", adminID=" + adminID + ", name=" + name + ", email=" + email + ", profileImagePath=" + profileImagePath + '}';
     }
 
 

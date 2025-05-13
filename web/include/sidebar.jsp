@@ -25,6 +25,11 @@
             </a>
         </li>
         <li class="nav-item">
+            <a class="nav-link <%= request.getRequestURI().contains("booking-management.jsp") ? "active" : ""%>" href="booking-management.jsp">
+                <i class="fas fa-calendar-alt"></i>Booking Management
+            </a>
+        </li>
+        <li class="nav-item">
             <a class="nav-link <%= request.getRequestURI().contains("maintenance.jsp") ? "active" : ""%>" href="maintenance.jsp">
                 <i class="fas fa-wrench"></i>Vehicle Maintenance
             </a>

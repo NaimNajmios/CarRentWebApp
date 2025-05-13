@@ -8,6 +8,7 @@ public class Client {
     private String address;
     private String phoneNumber;
     private String email;
+    private String profileImagePath;
 
     public Client() {
     }
@@ -70,9 +71,17 @@ public class Client {
         this.email = email;
     }
 
+    public String getProfileImagePath() {
+        return this.profileImagePath;
+    }
+
+    public void setProfileImagePath(String profileImagePath) {
+        this.profileImagePath = profileImagePath;
+    }
+
     @Override
     public String toString() {
-        return "Client{" + "userID=" + userID + ", clientID=" + clientID + ", name=" + name + ", address=" + address + ", phoneNumber=" + phoneNumber + ", email=" + email + '}';
+        return "Client{" + "userID=" + userID + ", clientID=" + clientID + ", name=" + name + ", address=" + address + ", phoneNumber=" + phoneNumber + ", email=" + email + ", profileImagePath=" + profileImagePath + '}';
     }
 
 

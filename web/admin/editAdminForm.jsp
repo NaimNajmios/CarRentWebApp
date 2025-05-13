@@ -1,4 +1,4 @@
-<%-- Import required classes --%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="Database.AdminOperation"%>
 <%@ page import="Database.DBOperation"%>
 <%@ page import="User.Client" %>
@@ -7,7 +7,6 @@
 
 <%-- Get user data by ID --%>
 <%
-
     String userID = request.getParameter("userID");
 
     // Get user and client data
@@ -19,11 +18,12 @@
     String userid = "";
     String adminName = "";
     String adminEmail = "";
+    String profilePicturePath = "";
 
     // Retrieve user data 
     admin = dbo.getAdminDataByAdminID(userID);
 
-    // // Check if the user exists
+    // Check if the user exists
     if (admin == null) {
         // User not found
         response.sendRedirect("user-management.jsp");
@@ -34,11 +34,12 @@
         userid = admin.getUserID();
         adminName = admin.getName();
         adminEmail = admin.getEmail();
+        profilePicturePath = admin.getProfileImagePath() != null && !admin.getProfileImagePath().isEmpty() 
+                            ? admin.getProfileImagePath() 
+                            : "images/profile/default_profile.jpg";
     }
-
 %>
 
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -48,7 +49,20 @@
         <link href="https://fonts.googleapis.com/css?family=DM+Sans:300,400,700&display=swap" rel="stylesheet">
         <!-- Fixed Paths for CSS -->
         <%@ include file="../include/admin-styling.html" %>
-
+        <style>
+            .profile-picture-container {
+                text-align: center;
+                margin-bottom: 1.5rem;
+            }
+            .profile-picture {
+                width: 150px;
+                height: 150px;
+                object-fit: cover;
+                border-radius: 50%;
+                border: 2px solid #ddd;
+                margin-bottom: 1rem;
+            }
+        </style>
     </head>
     <body data-spy="scroll" data-target=".site-navbar-target" data-offset="300">
         <div class="site-wrap" id="user-section">
@@ -61,7 +75,8 @@
                             </div>
                         </div>
                         <div class="col-6 col-md-9 text-right">
-                            <a href="<%= request.getContextPath()%>/Logout" class="btn btn-light" onclick="return confirm('Are you sure you want to logout?')">Logout</a>                        </div>
+                            <a href="<%= request.getContextPath()%>/Logout" class="btn btn-light" onclick="return confirm('Are you sure you want to logout?')">Logout</a>
+                        </div>
                     </div>
                 </div>
             </header>
@@ -69,7 +84,6 @@
             <div class="container-fluid">
                 <div class="row">
                     <%@ include file="../include/sidebar.jsp" %>
-                    <%-- Include end here --%>
                     <main class="col-md-9 ms-sm-auto col-lg-10 content">
                         <div class="card">
                             <div class="card-header">
@@ -77,9 +91,17 @@
                             </div>
                             <div class="card-body">
                                 <a href="user-management.jsp" class="btn btn-secondary btn-sm mb-3">Back to User Management</a>
-                                <form action="<%= request.getContextPath()%>/UpdateAdmin" method="post">
+                                <form action="<%= request.getContextPath()%>/UpdateAdmin" method="post" enctype="multipart/form-data">
                                     <%-- Message --%>
                                     <div id="div_message" class="text-center mb-4" style="color: blue;"></div>
+                                    <%-- Profile Picture Section --%>
+                                    <div class="form-group mb-3 profile-picture-container">
+                                        <label for="profilePicture">Profile Picture</label><br>
+                                        <img src="<%= request.getContextPath()%>/<%= profilePicturePath %>" alt="Profile Picture of <%= adminName %>" class="profile-picture">
+                                        <div>
+                                            <input type="file" class="form-control-file" id="profilePicture" name="profilePicture" accept="image/*">
+                                        </div>
+                                    </div>
                                     <div class="form-group mb-3">
                                         <label for="adminID">Admin ID</label>
                                         <input type="text" class="form-control" id="adminID" name="adminID" value="<% out.print(adminID); %>" disabled>

@@ -635,6 +635,7 @@ public class AdminOperation {
                 admin.setAdminID(resultSet.getString("adminID"));
                 admin.setName(resultSet.getString("name"));
                 admin.setEmail(resultSet.getString("email"));
+                admin.setProfileImagePath(resultSet.getString("profileImagePath"));
             } else {
                 System.out.println("No admin found with userID: " + userID);
             }
