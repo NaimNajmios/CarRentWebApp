@@ -24,7 +24,7 @@
           </a>
           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
             <li><a class="dropdown-item" href="profile.jsp">Profile</a></li>
-            <li><a class="dropdown-item" href="logout.jsp" onclick="return confirm('Are you sure you want to logout?')">Logout</a></li>
+            <li><a class="dropdown-item" href="<%= request.getContextPath()%>/Logout" onclick="return confirm('Are you sure you want to logout?')">Logout</a></li>
           </ul>
         </li>
       </ul>

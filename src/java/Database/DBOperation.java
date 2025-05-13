@@ -560,6 +560,7 @@ public class DBOperation {
                 client.setAddress(resultSet.getString("address"));
                 client.setPhoneNumber(resultSet.getString("phoneNumber"));
                 client.setEmail(resultSet.getString("email"));
+                client.setProfileImagePath(resultSet.getString("profileImagePath"));
             } else {
                 System.out.println("No client found with clientID: " + clientID);
             }
