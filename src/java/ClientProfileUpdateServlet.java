@@ -19,12 +19,13 @@ import javax.servlet.http.Part;
 @MultipartConfig(fileSizeThreshold = 1024 * 1024, // 1MB
         maxFileSize = 1024 * 1024 * 5, // 5MB
         maxRequestSize = 1024 * 1024 * 10)   // 10MB
+
 public class ClientProfileUpdateServlet extends HttpServlet {
 
     private static final Logger LOGGER = Logger.getLogger(ClientProfileUpdateServlet.class.getName());
     private final DBOperation dbo = new DBOperation();
     private final Client client = new Client();
-    private static final String UPLOAD_DIRECTORY = "/images/profile/";
+    private static final String UPLOAD_DIRECTORY = "images/profile/"; // Relative path for storage in database and web context
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -38,7 +39,8 @@ public class ClientProfileUpdateServlet extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        LOGGER.log(Level.INFO, "Processing client profile update request.");
+        LOGGER.log(Level.INFO, "Processing client profile update request at {0}",
+                new java.util.Date().toString());
 
         // Retrieve all parameters from the form
         String clientID = request.getParameter("clientID");
@@ -65,11 +67,30 @@ public class ClientProfileUpdateServlet extends HttpServlet {
             if (originalFileName != null && originalFileName.contains(".")) {
                 extension = originalFileName.substring(originalFileName.lastIndexOf("."));
             }
-            String uploadPath = getServletContext().getRealPath(request.getContextPath() + UPLOAD_DIRECTORY);
+
+            // Dynamically determine the base upload path using ServletContext.getRealPath()
+            String baseUploadPath = getServletContext().getRealPath("/");
+            if (baseUploadPath == null) {
+                // Fallback to a system property or default path if getRealPath() returns null
+                baseUploadPath = System.getProperty("upload.path", System.getProperty("user.home") + "/app/uploads/");
+                LOGGER.log(Level.WARNING, "ServletContext.getRealPath() returned null, using fallback path: {0}", baseUploadPath);
+            }
+            String uploadPath = baseUploadPath + UPLOAD_DIRECTORY;
             File uploadDir = new File(uploadPath);
             if (!uploadDir.exists()) {
-                uploadDir.mkdirs();
-                LOGGER.log(Level.INFO, "Created upload directory: {0}", uploadPath);
+                boolean dirCreated = uploadDir.mkdirs();
+                if (dirCreated) {
+                    LOGGER.log(Level.INFO, "Created upload directory: {0}", uploadPath);
+                } else {
+                    LOGGER.log(Level.SEVERE, "Failed to create upload directory: {0}. Check permissions.", uploadPath);
+                    throw new IOException("Unable to create upload directory: " + uploadPath);
+                }
+            }
+
+            // Check if the directory is writable
+            if (!uploadDir.canWrite()) {
+                LOGGER.log(Level.SEVERE, "Upload directory is not writable: {0}. Check permissions.", uploadPath);
+                throw new IOException("Upload directory is not writable: " + uploadPath);
             }
 
             String randomFileName;
@@ -79,23 +100,33 @@ public class ClientProfileUpdateServlet extends HttpServlet {
                 uploadFile = new File(uploadPath + randomFileName);
             } while (uploadFile.exists());
 
-            profilePicturePath = UPLOAD_DIRECTORY + randomFileName; // Store relative path in DB
+            profilePicturePath = "/" + UPLOAD_DIRECTORY + randomFileName; // Store relative path in DB
             try {
                 profilePicturePart.write(uploadFile.getAbsolutePath());
                 LOGGER.log(Level.INFO, "Profile picture uploaded successfully to: {0}", uploadFile.getAbsolutePath());
+                if (uploadFile.exists()) {
+                    LOGGER.log(Level.INFO, "Confirmed: Profile picture file exists at: {0}", uploadFile.getAbsolutePath());
+                } else {
+                    LOGGER.log(Level.SEVERE, "Profile picture file does not exist after writing: {0}", uploadFile.getAbsolutePath());
+                    profilePicturePath = null;
+                }
             } catch (IOException e) {
                 LOGGER.log(Level.SEVERE, "Error writing profile picture to disk: {0}", e.getMessage());
                 profilePicturePath = null; // Indicate upload failure
             }
         } else {
             LOGGER.log(Level.INFO, "No new profile picture uploaded or file is empty.");
-            // If no new picture, and the client might already have one,
-            // you might want to retrieve the existing path from the database
-            // to avoid overwriting it with null. This depends on your application logic.
-            // For now, we'll just keep it as null if no new one is uploaded.
+            // Retrieve the existing profile picture path to avoid overwriting with null
+            String existingPath = dbo.getClientProfilePicture(clientID); // Assumes this method exists in DBOperation
+            if (existingPath != null && !existingPath.isEmpty()) {
+                profilePicturePath = existingPath;
+            } else {
+                profilePicturePath = "/images/profile/default_profile.jpg"; // Default path if none exists
+            }
         }
 
-        LOGGER.log(Level.INFO, "Updating client ID: {0} with new details and picture path: {1}", new Object[]{clientID, profilePicturePath});
+        LOGGER.log(Level.INFO, "Updating client ID: {0} with new details and picture path: {1}",
+                new Object[]{clientID, profilePicturePath});
 
         // Set the updated user details in the client object
         client.setUserID(clientID);
@@ -112,16 +143,18 @@ public class ClientProfileUpdateServlet extends HttpServlet {
         boolean updateProfilePictureSuccess = true; // Assume success if no new picture
 
         // Update profile picture path only if a new picture was uploaded
-        if (profilePicturePath != null) {
+        if (profilePicturePart != null && profilePicturePart.getSize() > 0 && profilePicturePath != null) {
             updateProfilePictureSuccess = dbo.updateClientProfilePicture(clientID, profilePicturePath);
         }
 
         if (updateDetailsSuccess && updateProfilePictureSuccess) {
             LOGGER.log(Level.INFO, "Client details updated successfully for ID: {0}", clientID);
+            request.getSession().setAttribute("message", "Profile updated successfully.");
             response.sendRedirect(request.getContextPath() + "/client/profile.jsp");
         } else {
             LOGGER.log(Level.WARNING, "Failed to update client details for ID: {0}. Details update: {1}, Picture update: {2}",
                     new Object[]{clientID, updateDetailsSuccess, updateProfilePictureSuccess});
+            request.getSession().setAttribute("error", "Failed to update profile. Please try again.");
             response.sendRedirect(request.getContextPath() + "/client/profile.jsp");
         }
     }

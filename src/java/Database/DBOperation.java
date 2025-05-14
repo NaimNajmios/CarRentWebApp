@@ -673,4 +673,45 @@ public class DBOperation {
             }
         }
     }
+
+    // Get client profile picture
+    public String getClientProfilePicture(String clientID) {
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        String profileImagePath = null; 
+
+        try {
+            connection = DatabaseConnection.getConnection();
+
+            // SQL query to retrieve client profile picture
+            String sql = "SELECT profileImagePath FROM client WHERE clientID = ?"; 
+
+            preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1, clientID);
+
+            resultSet = preparedStatement.executeQuery(); 
+
+            if (resultSet.next()) {
+                profileImagePath = resultSet.getString("profileImagePath");
+            }
+        } catch (SQLException | ClassNotFoundException e) {
+            throw new RuntimeException("Database error while retrieving client profile picture: " + e.getMessage());
+        } finally {
+            try {
+                if (resultSet != null) {
+                    resultSet.close();
+                }
+                if (preparedStatement != null) {
+                    preparedStatement.close(); 
+                }
+                if (connection != null) {
+                    DatabaseConnection.closeConnection(connection);
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException("Error closing database resources: " + e.getMessage()); 
+            }
+        }
+        return profileImagePath;
+    }
 }
