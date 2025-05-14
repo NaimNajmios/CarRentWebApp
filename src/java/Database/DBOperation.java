@@ -300,7 +300,8 @@ public class DBOperation {
         boolean registrationSuccess = false;
         long newUserId = -1;
 
-        // You can generate a username (e.g., email prefix + timestamp) or leave it up to your design
+        // You can generate a username (e.g., email prefix + timestamp) or leave it up
+        // to your design
         String username = email.split("@")[0] + System.currentTimeMillis(); // e.g., "john.1684222345"
         String plainPassword = "Temp123!"; // Default temporary password
         String hashedPassword = hashPasswordSHA256(plainPassword);
@@ -314,7 +315,8 @@ public class DBOperation {
             connection.setAutoCommit(false);
 
             // Insert into 'user' table
-            try (PreparedStatement psUser = connection.prepareStatement(sqlInsertUser, PreparedStatement.RETURN_GENERATED_KEYS)) {
+            try (PreparedStatement psUser = connection.prepareStatement(sqlInsertUser,
+                    PreparedStatement.RETURN_GENERATED_KEYS)) {
                 psUser.setString(1, username);
                 psUser.setString(2, hashedPassword);
                 psUser.setString(3, role);
@@ -367,7 +369,7 @@ public class DBOperation {
         return registrationSuccess;
     }
 
-// Helper method to hash a password with SHA-256
+    // Helper method to hash a password with SHA-256
     private String hashPasswordSHA256(String password) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         byte[] hashBytes = md.digest(password.getBytes());
@@ -588,4 +590,87 @@ public class DBOperation {
         return client; // Returns populated Client object or null if not found
     }
 
+    // Update client details by Client object
+    public boolean updateClientDetails(Client client) {
+
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+
+        // Log
+        System.out.println("Updating client details for userID: " + client.getUserID());
+
+        try {
+            connection = DatabaseConnection.getConnection();
+
+            // SQL query to update client details
+            String sql = "UPDATE client SET name = ?, address = ?, phonenumber = ?, email = ? WHERE clientID = ?";
+
+            preparedStatement = connection.prepareStatement(sql);
+
+            preparedStatement.setString(1, client.getName());
+            preparedStatement.setString(2, client.getAddress());
+            preparedStatement.setString(3, client.getPhoneNumber());
+            preparedStatement.setString(4, client.getEmail());
+            preparedStatement.setString(5, client.getUserID());
+
+            int rowsAffected = preparedStatement.executeUpdate();
+
+            return rowsAffected > 0; // Returns true if update was successful
+
+        } catch (SQLException | ClassNotFoundException e) {
+            // Log the error server-side
+            throw new RuntimeException("Database error while updating client details: " + e.getMessage());
+
+        } finally {
+            // Close resources
+            try {
+                if (preparedStatement != null) {
+                    preparedStatement.close();
+                }
+                if (connection != null) {
+                    DatabaseConnection.closeConnection(connection);
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException("Error closing database resources: " + e.getMessage());
+            }
+        }
+
+    }
+
+    // Update client profile picture
+    public boolean updateClientProfilePicture(String clientID, String profileImagePath) {
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+
+        try {
+            connection = DatabaseConnection.getConnection();
+
+            // SQL query to update client profile picture
+            String sql = "UPDATE client SET profileImagePath = ? WHERE clientID = ?";
+
+            preparedStatement = connection.prepareStatement(sql);
+
+            preparedStatement.setString(1, profileImagePath);
+            preparedStatement.setString(2, clientID);
+
+            int rowsAffected = preparedStatement.executeUpdate();
+
+            return rowsAffected > 0;
+
+        } catch (SQLException | ClassNotFoundException e) {
+            throw new RuntimeException("Database error while updating client profile picture: " + e.getMessage());
+        } finally {
+            // Close resources
+            try {
+                if (preparedStatement != null) {
+                    preparedStatement.close();
+                }
+                if (connection != null) {
+                    DatabaseConnection.closeConnection(connection);
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException("Error closing database resources: " + e.getMessage());
+            }
+        }
+    }
 }

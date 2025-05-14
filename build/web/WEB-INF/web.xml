@@ -40,6 +40,10 @@
         <servlet-name>GenerateReportServlet</servlet-name>
         <servlet-class>GenerateReportServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>ClientProfileUpdateServlet</servlet-name>
+        <servlet-class>ClientProfileUpdateServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>UpdateClientServlet</servlet-name>
         <url-pattern>/UpdateClient</url-pattern>
@@ -79,6 +83,10 @@
     <servlet-mapping>
         <servlet-name>GenerateReportServlet</servlet-name>
         <url-pattern>/GenerateReport</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ClientProfileUpdateServlet</servlet-name>
+        <url-pattern>/ClientProfileUpdate</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

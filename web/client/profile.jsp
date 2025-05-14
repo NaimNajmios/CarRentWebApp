@@ -16,14 +16,6 @@
     DBOperation dbo = new DBOperation();
     client = dbo.getClientDataByClientID(client.getClientID());
 
-    // Print client data
-    System.out.println("Client ID: " + client.getClientID());
-    System.out.println("Client Name: " + client.getName());
-    System.out.println("Client Email: " + client.getEmail());
-    System.out.println("Client Phone: " + client.getPhoneNumber());
-    System.out.println("Client Address: " + client.getAddress());
-    System.out.println("Profile Image Path: " + client.getProfileImagePath());
-
     // Assign to variables
     String clientID = client.getClientID();
     String clientName = client.getName();
@@ -85,8 +77,8 @@
                 z-index: 10;
             }
             .profile-avatar {
-                width: 100px; /* Or your desired fixed width */
-                height: 100px; /* Or your desired fixed height */
+                width: 100px;
+                height: 100px;
                 background-color: #007bff;
                 color: white;
                 border-radius: 50%;
@@ -97,13 +89,45 @@
                 margin: -70px auto 1.5rem;
                 border: 5px solid white;
                 box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-                overflow: hidden; /* Important to clip the image if it overflows the circle */
+                overflow: hidden;
+                position: relative;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+            .profile-avatar:hover {
+                border-color: #007bff;
+            }
+            .profile-avatar-overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+                border-radius: 50%;
+            }
+            .profile-avatar:hover .profile-avatar-overlay {
+                opacity: 1;
             }
             .profile-avatar img {
                 width: 100%;
-                height: auto; /* Maintain aspect ratio */
-                display: block; /* Remove extra space below the image */
-                object-fit: cover; /* Ensures the image covers the area without distortion, may crop */
+                height: 100%;
+                object-fit: cover;
+            }
+            .profile-picture-input {
+                display: none;
+            }
+            .profile-picture-actions {
+                display: flex;
+                gap: 0.5rem;
+                justify-content: center;
+                margin-top: 0.5rem;
             }
             .profile-header {
                 text-align: center;
@@ -253,9 +277,13 @@
 
         <div class="container">
             <div class="profile-card">
-                <div class="profile-avatar">
-                    <img src="<%= request.getContextPath()%>/<%= profileImagePath%>" alt="Profile Image">
+                <div class="profile-avatar" onclick="document.getElementById('profilePicture').click()">
+                    <img src="<%= request.getContextPath()%>/<%= profileImagePath%>" alt="Profile Image" id="profilePreview">
+                    <div class="profile-avatar-overlay">
+                        <i class="bi bi-camera-fill"></i>
+                    </div>
                 </div>
+
                 <div class="profile-header">
                     <h2><%= clientName%></h2>
                     <p>Member since <%= java.time.LocalDate.now().getYear()%></p>
@@ -295,8 +323,15 @@
                     </a>
                 </div>
                 <% } else {%>
-                <form action="<%= request.getContextPath()%>/UpdateClient" method="post">
+                <form action="<%= request.getContextPath()%>/ClientProfileUpdate" method="post" enctype="multipart/form-data">
                     <input type="hidden" name="clientID" value="<%= clientID%>">
+                    
+                    <%-- Profile Picture Section --%>
+                    <div class="profile-picture-actions">
+                        <input type="file" class="profile-picture-input" id="profilePicture" name="profilePicture" accept="image/*" onchange="previewImage(this)">
+                    </div>
+                    <small class="form-text text-muted d-block text-center mb-3">Recommended size: 300x300 pixels. Max file size: 2MB</small>
+
                     <div class="mb-3">
                         <label for="name" class="form-label">Name</label>
                         <div class="input-group">
@@ -325,6 +360,8 @@
                             <textarea class="form-control" id="address" name="address" rows="3" placeholder="Enter your address"><%= clientAddress != null ? clientAddress : ""%></textarea>
                         </div>
                     </div>
+                    <!-- Hidden input, client id -->
+                    <input type="hidden" name="clientID" value="<%= clientID%>">
                     <div class="button-group">
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-check-lg edit-icon"></i>Save Changes
@@ -341,5 +378,21 @@
         <%@ include file="../include/client-footer.jsp" %>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            function previewImage(input) {
+                if (input.files && input.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        document.getElementById('profilePreview').src = e.target.result;
+                    }
+                    reader.readAsDataURL(input.files[0]);
+                }
+            }
+
+            function resetProfilePicture() {
+                document.getElementById('profilePicture').value = '';
+                document.getElementById('profilePreview').src = '<%= request.getContextPath()%>/<%= profileImagePath%>';
+            }
+        </script>
     </body>
 </html> 
