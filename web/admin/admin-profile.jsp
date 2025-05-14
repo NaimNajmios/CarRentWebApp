@@ -17,21 +17,35 @@
     String profilePicturePath = "";
 
     // Reassign object passed in session
-    user = (User)session.getAttribute("user");
-    admin = (Admin)session.getAttribute("admin");
+    user = (User) session.getAttribute("user");
+    admin = (Admin) session.getAttribute("admin");
 
-    if (user != null) {
+    if (admin != null) {
         adminID = admin.getAdminID();
         userid = admin.getUserID();
         adminName = admin.getName();
         adminEmail = admin.getEmail();
-        profilePicturePath = admin.getProfileImagePath() != null && !admin.getProfileImagePath().isEmpty() 
-                            ? admin.getProfileImagePath() 
-                            : "images/profile/default_profile.jpg";
-    } else if (admin != null) {
-        // Redirect to user management
-        response.sendRedirect("user-management.jsp");
+        profilePicturePath = admin.getProfileImagePath() != null && !admin.getProfileImagePath().isEmpty()
+                ? admin.getProfileImagePath()
+                : "/images/profile/default_profile.jpg";
+    } else {
+        // Redirect to login if admin is not logged in
+        response.sendRedirect(request.getContextPath() + "/index.jsp?error=logout");
         return;
+    }
+
+    // Handle messages
+    String message = request.getParameter("message");
+    String messageText = "";
+    String messageClass = "";
+    if (message != null) {
+        if (message.equals("changesuccess")) {
+            messageText = "Profile updated successfully.";
+            messageClass = "text-success";
+        } else if (message.equals("error")) {
+            messageText = "Failed to update profile. Please try again.";
+            messageClass = "text-danger";
+        }
     }
 %>
 
@@ -56,6 +70,25 @@
                 border-radius: 50%;
                 border: 2px solid #ddd;
                 margin-bottom: 1rem;
+                cursor: pointer;
+                transition: border-color 0.3s ease;
+            }
+            .profile-picture:hover {
+                border-color: #007bff;
+            }
+            .profile-picture-actions {
+                display: flex;
+                gap: 0.5rem;
+                justify-content: center;
+            }
+            .btn-sm {
+                font-size: 0.875rem;
+                padding: 0.25rem 0.5rem;
+            }
+            .message {
+                font-size: 1rem;
+                margin-bottom: 1rem;
+                text-align: center;
             }
         </style>
     </head>
@@ -87,41 +120,47 @@
                             <div class="card-body">
                                 <form action="<%= request.getContextPath()%>/UpdateAdmin" method="post" enctype="multipart/form-data">
                                     <%-- Message --%>
-                                    <div id="div_message" class="text-center mb-4" style="color: blue;">
-                                        <%
-                                            String message = (String) request.getAttribute("message");
-                                            if (message != null) {
-                                                out.print(message);
-                                            }
-                                        %>
+                                    <% if (!messageText.isEmpty()) {%>
+                                    <div class="message <%= messageClass%>">
+                                        <%= messageText%>
                                     </div>
+                                    <% }%>
                                     <%-- Profile Picture Section --%>
                                     <div class="form-group mb-3 profile-picture-container">
                                         <label for="profilePicture">Profile Picture</label><br>
-                                        <img src="<%= request.getContextPath()%>/<%= profilePicturePath %>" alt="Profile Picture" class="profile-picture">
-                                        <div>
-                                            <input type="file" class="form-control-file" id="profilePicture" name="profilePicture" accept="image/*">
+                                        <img src="<%= request.getContextPath()%>/<%= profilePicturePath%>" alt="Profile Picture" 
+                                             class="profile-picture" id="profilePreview" onclick="document.getElementById('profilePicture').click()">
+                                        <div class="profile-picture-actions">
+                                            <input type="file" class="form-control-file" id="profilePicture" name="profilePicture" accept="image/*" 
+                                                   onchange="previewImage(this)" style="display: none;">
+                                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="document.getElementById('profilePicture').click()">
+                                                Change
+                                            </button>
+                                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="resetProfilePicture()">
+                                                Reset
+                                            </button>
                                         </div>
+                                        <small class="form-text text-muted d-block text-center mt-2">Recommended size: 300x300 pixels. Max file size: 5MB</small>
                                     </div>
                                     <div class="form-group mb-3">
                                         <label for="adminID">Admin ID</label>
-                                        <input type="text" class="form-control" id="adminID" name="adminID" value="<% out.print(adminID); %>" disabled>
-                                        <input type="hidden" name="adminID" value="<% out.print(adminID); %>">
+                                        <input type="text" class="form-control" id="adminID" name="adminID" value="<%= adminID%>" disabled>
+                                        <input type="hidden" name="adminID" value="<%= adminID%>">
                                     </div>
                                     <%-- User ID --%>
                                     <div class="form-group mb-3">
                                         <label for="userID">User ID</label>
-                                        <input type="text" class="form-control" id="userID" name="userID" value="<% out.print(userid); %>" disabled>
-                                        <input type="hidden" name="userID" value="<% out.print(userid); %>">
+                                        <input type="text" class="form-control" id="userID" name="userID" value="<%= userid%>" disabled>
+                                        <input type="hidden" name="userID" value="<%= userid%>">
                                     </div>
                                     <%-- Name --%>
                                     <div class="form-group mb-3">
                                         <label for="name">Name</label>
-                                        <input type="text" class="form-control" id="name" name="name" value="<% out.print(adminName); %>" required>
+                                        <input type="text" class="form-control" id="name" name="name" value="<%= adminName%>" required>
                                     </div>
                                     <div class="form-group mb-3">
                                         <label for="email">Email</label>
-                                        <input type="email" class="form-control" id="email" name="email" value="<% out.print(adminEmail);%>" required>
+                                        <input type="email" class="form-control" id="email" name="email" value="<%= adminEmail%>" required>
                                     </div>
                                     <button type="submit" class="btn btn-primary">Save Changes</button>
                                     <a href="user-management.jsp" class="btn btn-outline-secondary">Cancel</a>
@@ -134,5 +173,21 @@
         </div>
         <!-- Fixed Paths for JS -->
         <%@ include file="../include/admin-js.html" %>
+        <script>
+            function previewImage(input) {
+                if (input.files && input.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        document.getElementById('profilePreview').src = e.target.result;
+                    }
+                    reader.readAsDataURL(input.files[0]);
+                }
+            }
+
+            function resetProfilePicture() {
+                document.getElementById('profilePicture').value = '';
+                document.getElementById('profilePreview').src = '<%= request.getContextPath()%>/<%= profilePicturePath%>';
+                    }
+        </script>
     </body>
 </html>
