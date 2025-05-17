@@ -56,13 +56,14 @@
                                     <div class="tab-pane fade show active" id="booking" role="tabpanel" aria-labelledby="booking-tab">
                                         <div class="report-form">
                                             <h5>Booking Reports</h5>
-                                            <form action="<%= request.getContextPath()%>/GenerateReport" method="post" target="_blank">
+                                            <form action="<%= request.getContextPath()%>/GenerateReport" method="post" target="_blank" id="bookingReportForm">
                                                 <input type="hidden" name="reportCategory" value="booking">
                                                 <div class="report-type-group">
                                                     <h6>Report Type</h6>
                                                     <div class="form-group">
                                                         <label for="bookingReportType">Select Report Type</label>
-                                                        <select class="form-control" id="bookingReportType" name="reportType">
+                                                        <select class="form-control" id="bookingReportType" name="reportType" required>
+                                                            <option value="">Select a report type</option>
                                                             <option value="booking_summary">Booking Summary</option>
                                                             <option value="detailed_bookings">Detailed Bookings</option>
                                                             <option value="bookings_by_client">Bookings by Client</option>
@@ -74,7 +75,7 @@
                                                     <div class="date-selection-group">
                                                         <label>Date Range:</label>
                                                         <div>
-                                                            <input type="radio" id="bookingToday" name="dateRangeType" value="today">
+                                                            <input type="radio" id="bookingToday" name="dateRangeType" value="today" required>
                                                             <label for="bookingToday">Today</label>
                                                         </div>
                                                         <div>
@@ -136,19 +137,49 @@
                                                 <button type="submit" class="btn btn-primary">Generate Report</button>
                                             </form>
                                             <script>
-                                                // Booking tab: Enable/disable custom date fields
-                                                document.querySelectorAll('input[name="dateRangeType"]').forEach(function(radio) {
+                                                // Booking tab: Enable/disable custom date fields and form validation
+                                                document.querySelectorAll('#booking input[name="dateRangeType"]').forEach(function(radio) {
                                                     radio.addEventListener('change', function() {
                                                         const startDateInput = document.getElementById('bookingStartDate');
                                                         const endDateInput = document.getElementById('bookingEndDate');
                                                         const isCustom = this.value === 'custom';
                                                         startDateInput.disabled = !isCustom;
                                                         endDateInput.disabled = !isCustom;
-                                                        if (!isCustom) {
+                                                        if (isCustom) {
+                                                            startDateInput.required = true;
+                                                            endDateInput.required = true;
+                                                        } else {
+                                                            startDateInput.required = false;
+                                                            endDateInput.required = false;
                                                             startDateInput.value = '';
                                                             endDateInput.value = '';
                                                         }
                                                     });
+                                                });
+
+                                                document.getElementById('bookingReportForm').addEventListener('submit', function(e) {
+                                                    const reportType = document.getElementById('bookingReportType').value;
+                                                    const dateRangeType = document.querySelector('input[name="dateRangeType"]:checked');
+                                                    const startDate = document.getElementById('bookingStartDate');
+                                                    const endDate = document.getElementById('bookingEndDate');
+
+                                                    if (!reportType) {
+                                                        e.preventDefault();
+                                                        alert('Please select a report type.');
+                                                        return;
+                                                    }
+
+                                                    if (!dateRangeType) {
+                                                        e.preventDefault();
+                                                        alert('Please select a date range.');
+                                                        return;
+                                                    }
+
+                                                    if (dateRangeType.value === 'custom' && (!startDate.value || !endDate.value)) {
+                                                        e.preventDefault();
+                                                        alert('Please select both start and end dates for custom range.');
+                                                        return;
+                                                    }
                                                 });
                                             </script>
                                         </div>
@@ -158,13 +189,14 @@
                                     <div class="tab-pane fade" id="vehicle" role="tabpanel" aria-labelledby="vehicle-tab">
                                         <div class="report-form">
                                             <h5>Vehicle Reports</h5>
-                                            <form action="<%= request.getContextPath()%>/GenerateReport" method="post" target="_blank">
+                                            <form action="<%= request.getContextPath()%>/GenerateReport" method="post" target="_blank" id="vehicleReportForm">
                                                 <input type="hidden" name="reportCategory" value="vehicle">
                                                 <div class="report-type-group">
                                                     <h6>Report Type</h6>
                                                     <div class="form-group">
                                                         <label for="vehicleReportType">Select Report Type</label>
-                                                        <select class="form-control" id="vehicleReportType" name="reportType">
+                                                        <select class="form-control" id="vehicleReportType" name="reportType" required>
+                                                            <option value="">Select a report type</option>
                                                             <option value="vehicle_list">Vehicle List</option>
                                                             <option value="availability_summary">Availability Summary</option>
                                                             <option value="usage_summary">Usage Summary</option>
@@ -178,7 +210,7 @@
                                                     <div class="date-selection-group">
                                                         <label>Date Range (for Usage/Performance):</label>
                                                         <div>
-                                                            <input type="radio" id="vehicleThisMonth" name="dateRangeType" value="this_month">
+                                                            <input type="radio" id="vehicleThisMonth" name="dateRangeType" value="this_month" required>
                                                             <label for="vehicleThisMonth">This Month</label>
                                                         </div>
                                                         <div>
@@ -227,7 +259,7 @@
                                                 <button type="submit" class="btn btn-primary">Generate Report</button>
                                             </form>
                                             <script>
-                                                // Vehicle tab: Enable/disable custom date fields
+                                                // Vehicle tab: Enable/disable custom date fields and form validation
                                                 document.querySelectorAll('#vehicle input[name="dateRangeType"]').forEach(function(radio) {
                                                     radio.addEventListener('change', function() {
                                                         const startDateInput = document.getElementById('vehicleStartDate');
@@ -235,11 +267,41 @@
                                                         const isCustom = this.value === 'custom';
                                                         startDateInput.disabled = !isCustom;
                                                         endDateInput.disabled = !isCustom;
-                                                        if (!isCustom) {
+                                                        if (isCustom) {
+                                                            startDateInput.required = true;
+                                                            endDateInput.required = true;
+                                                        } else {
+                                                            startDateInput.required = false;
+                                                            endDateInput.required = false;
                                                             startDateInput.value = '';
                                                             endDateInput.value = '';
                                                         }
                                                     });
+                                                });
+
+                                                document.getElementById('vehicleReportForm').addEventListener('submit', function(e) {
+                                                    const reportType = document.getElementById('vehicleReportType').value;
+                                                    const dateRangeType = document.querySelector('#vehicle input[name="dateRangeType"]:checked');
+                                                    const startDate = document.getElementById('vehicleStartDate');
+                                                    const endDate = document.getElementById('vehicleEndDate');
+
+                                                    if (!reportType) {
+                                                        e.preventDefault();
+                                                        alert('Please select a report type.');
+                                                        return;
+                                                    }
+
+                                                    if (!dateRangeType) {
+                                                        e.preventDefault();
+                                                        alert('Please select a date range.');
+                                                        return;
+                                                    }
+
+                                                    if (dateRangeType.value === 'custom' && (!startDate.value || !endDate.value)) {
+                                                        e.preventDefault();
+                                                        alert('Please select both start and end dates for custom range.');
+                                                        return;
+                                                    }
                                                 });
                                             </script>
                                         </div>
@@ -249,13 +311,14 @@
                                     <div class="tab-pane fade" id="payment" role="tabpanel" aria-labelledby="payment-tab">
                                         <div class="report-form">
                                             <h5>Payment Reports</h5>
-                                            <form action="<%= request.getContextPath()%>/GenerateReport" method="post" target="_blank">
+                                            <form action="<%= request.getContextPath()%>/GenerateReport" method="post" target="_blank" id="paymentReportForm">
                                                 <input type="hidden" name="reportCategory" value="payment">
                                                 <div class="report-type-group">
                                                     <h6>Report Type</h6>
                                                     <div class="form-group">
                                                         <label for="paymentReportType">Select Report Type</label>
-                                                        <select class="form-control" id="paymentReportType" name="reportType">
+                                                        <select class="form-control" id="paymentReportType" name="reportType" required>
+                                                            <option value="">Select a report type</option>
                                                             <option value="payment_details">Payment Details</option>
                                                             <option value="payment_summary">Payment Summary</option>
                                                             <option value="revenue_by_payment_type">Revenue by Payment Type</option>
@@ -267,7 +330,7 @@
                                                     <div class="date-selection-group">
                                                         <label>Date Range:</label>
                                                         <div>
-                                                            <input type="radio" id="paymentToday" name="dateRangeType" value="today">
+                                                            <input type="radio" id="paymentToday" name="dateRangeType" value="today" required>
                                                             <label for="paymentToday">Today</label>
                                                         </div>
                                                         <div>
@@ -329,7 +392,7 @@
                                                 <button type="submit" class="btn btn-primary">Generate Report</button>
                                             </form>
                                             <script>
-                                                // Payment tab: Enable/disable custom date fields
+                                                // Payment tab: Enable/disable custom date fields and form validation
                                                 document.querySelectorAll('#payment input[name="dateRangeType"]').forEach(function(radio) {
                                                     radio.addEventListener('change', function() {
                                                         const startDateInput = document.getElementById('paymentStartDate');
@@ -337,11 +400,41 @@
                                                         const isCustom = this.value === 'custom';
                                                         startDateInput.disabled = !isCustom;
                                                         endDateInput.disabled = !isCustom;
-                                                        if (!isCustom) {
+                                                        if (isCustom) {
+                                                            startDateInput.required = true;
+                                                            endDateInput.required = true;
+                                                        } else {
+                                                            startDateInput.required = false;
+                                                            endDateInput.required = false;
                                                             startDateInput.value = '';
                                                             endDateInput.value = '';
                                                         }
                                                     });
+                                                });
+
+                                                document.getElementById('paymentReportForm').addEventListener('submit', function(e) {
+                                                    const reportType = document.getElementById('paymentReportType').value;
+                                                    const dateRangeType = document.querySelector('#payment input[name="dateRangeType"]:checked');
+                                                    const startDate = document.getElementById('paymentStartDate');
+                                                    const endDate = document.getElementById('paymentEndDate');
+
+                                                    if (!reportType) {
+                                                        e.preventDefault();
+                                                        alert('Please select a report type.');
+                                                        return;
+                                                    }
+
+                                                    if (!dateRangeType) {
+                                                        e.preventDefault();
+                                                        alert('Please select a date range.');
+                                                        return;
+                                                    }
+
+                                                    if (dateRangeType.value === 'custom' && (!startDate.value || !endDate.value)) {
+                                                        e.preventDefault();
+                                                        alert('Please select both start and end dates for custom range.');
+                                                        return;
+                                                    }
                                                 });
                                             </script>
                                         </div>
@@ -351,13 +444,14 @@
                                     <div class="tab-pane fade" id="maintenance" role="tabpanel" aria-labelledby="maintenance-tab">
                                         <div class="report-form">
                                             <h5>Maintenance Reports</h5>
-                                            <form action="<%= request.getContextPath()%>/GenerateReport" method="post" target="_blank">
+                                            <form action="<%= request.getContextPath()%>/GenerateReport" method="post" target="_blank" id="maintenanceReportForm">
                                                 <input type="hidden" name="reportCategory" value="maintenance">
                                                 <div class="report-type-group">
                                                     <h6>Report Type</h6>
                                                     <div class="form-group">
                                                         <label for="maintenanceReportType">Select Report Type</label>
-                                                        <select class="form-control" id="maintenanceReportType" name="reportType">
+                                                        <select class="form-control" id="maintenanceReportType" name="reportType" required>
+                                                            <option value="">Select a report type</option>
                                                             <option value="maintenance_schedule">Maintenance Schedule</option>
                                                             <option value="maintenance_history">Maintenance History</option>
                                                             <option value="cost_analysis">Maintenance Cost Analysis</option>
@@ -369,7 +463,7 @@
                                                     <div class="date-selection-group">
                                                         <label>Date Range:</label>
                                                         <div>
-                                                            <input type="radio" id="maintenanceThisMonth" name="dateRangeType" value="this_month">
+                                                            <input type="radio" id="maintenanceThisMonth" name="dateRangeType" value="this_month" required>
                                                             <label for="maintenanceThisMonth">This Month</label>
                                                         </div>
                                                         <div>
@@ -417,7 +511,7 @@
                                                 <button type="submit" class="btn btn-primary">Generate Report</button>
                                             </form>
                                             <script>
-                                                // Maintenance tab: Enable/disable custom date fields
+                                                // Maintenance tab: Enable/disable custom date fields and form validation
                                                 document.querySelectorAll('#maintenance input[name="dateRangeType"]').forEach(function(radio) {
                                                     radio.addEventListener('change', function() {
                                                         const startDateInput = document.getElementById('maintenanceStartDate');
@@ -425,12 +519,19 @@
                                                         const isCustom = this.value === 'custom';
                                                         startDateInput.disabled = !isCustom;
                                                         endDateInput.disabled = !isCustom;
-                                                        if (!isCustom) {
+                                                        if (isCustom) {
+                                                            startDateInput.required = true;
+                                                            endDateInput.required = true;
+                                                        } else {
+                                                            startDateInput.required = false;
+                                                            endDateInput.required = false;
                                                             startDateInput.value = '';
                                                             endDateInput.value = '';
                                                         }
                                                     });
                                                 });
+
+                                                document.getElementById('maintenanceReportForm').addEventListener('submit', function(e) {
                                             </script>
                                         </div>
                                     </div>
@@ -439,14 +540,16 @@
                                     <div class="tab-pane fade" id="user" role="tabpanel" aria-labelledby="user-tab">
                                         <div class="report-form">
                                             <h5>User Reports</h5>
-                                            <form action="<%= request.getContextPath()%>/GenerateReport" method="post" target="_blank">
+                                            <form action="<%= request.getContextPath()%>/GenerateReport" method="post" target="_blank" id="userReportForm">
                                                 <input type="hidden" name="reportCategory" value="user">
                                                 <div class="report-type-group">
                                                     <h6>Report Type</h6>
                                                     <div class="form-group">
                                                         <label for="userReportType">Select Report Type</label>
-                                                        <select class="form-control" id="userReportType" name="reportType">
+                                                        <select class="form-control" id="userReportType" name="reportType" required>
+                                                            <option value="">Select a report type</option>
                                                             <option value="detailed_registrations">Detailed Registrations</option>
+                                                            <option value="summary">User Summary</option>
                                                         </select>
                                                     </div>
                                                 </div>
@@ -455,7 +558,7 @@
                                                     <div class="date-selection-group">
                                                         <label>Date Range:</label>
                                                         <div>
-                                                            <input type="radio" id="userThisMonth" name="dateRangeType" value="this_month">
+                                                            <input type="radio" id="userThisMonth" name="dateRangeType" value="this_month" required>
                                                             <label for="userThisMonth">This Month</label>
                                                         </div>
                                                         <div>
@@ -499,7 +602,7 @@
                                                 <button type="submit" class="btn btn-primary">Generate Report</button>
                                             </form>
                                             <script>
-                                                // User tab: Enable/disable custom date fields
+                                                // User tab: Enable/disable custom date fields and form validation
                                                 document.querySelectorAll('#user input[name="dateRangeType"]').forEach(function(radio) {
                                                     radio.addEventListener('change', function() {
                                                         const startDateInput = document.getElementById('userStartDate');
@@ -507,11 +610,41 @@
                                                         const isCustom = this.value === 'custom';
                                                         startDateInput.disabled = !isCustom;
                                                         endDateInput.disabled = !isCustom;
-                                                        if (!isCustom) {
+                                                        if (isCustom) {
+                                                            startDateInput.required = true;
+                                                            endDateInput.required = true;
+                                                        } else {
+                                                            startDateInput.required = false;
+                                                            endDateInput.required = false;
                                                             startDateInput.value = '';
                                                             endDateInput.value = '';
                                                         }
                                                     });
+                                                });
+
+                                                document.getElementById('userReportForm').addEventListener('submit', function(e) {
+                                                    const reportType = document.getElementById('userReportType').value;
+                                                    const dateRangeType = document.querySelector('input[name="dateRangeType"]:checked');
+                                                    const startDate = document.getElementById('userStartDate');
+                                                    const endDate = document.getElementById('userEndDate');
+
+                                                    if (!reportType) {
+                                                        e.preventDefault();
+                                                        alert('Please select a report type.');
+                                                        return;
+                                                    }
+
+                                                    if (!dateRangeType) {
+                                                        e.preventDefault();
+                                                        alert('Please select a date range.');
+                                                        return;
+                                                    }
+
+                                                    if (dateRangeType.value === 'custom' && (!startDate.value || !endDate.value)) {
+                                                        e.preventDefault();
+                                                        alert('Please select both start and end dates for custom range.');
+                                                        return;
+                                                    }
                                                 });
                                             </script>
                                         </div>
