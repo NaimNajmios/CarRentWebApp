@@ -23,7 +23,7 @@
                     <div id="div_message" class="text-center mb-6 text-red-500"></div>
 
                     <!-- Login Form -->
-                    <form action="Login" method="POST" class="space-y-6">
+                    <form id="loginForm" action="Login" method="POST" class="space-y-6" onsubmit="return validateForm()">
                         <div>
                             <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
                             <input type="text" id="username" name="username" placeholder="Enter your username" 
@@ -59,6 +59,37 @@
 
         <!-- JavaScript Dependencies -->
         <%@ include file="../include/credential-js.html" %>
+
+        <script>
+            function validateForm() {
+                var username = document.getElementById('username').value;
+                var password = document.getElementById('password').value;
+                var errorMessage = document.getElementById('div_message');
+                errorMessage.innerHTML = '';
+
+                if (username.trim() === '') {
+                    errorMessage.innerHTML = 'Username is required.';
+                    return false;
+                }
+
+                if (password.trim() === '') {
+                    errorMessage.innerHTML = 'Password is required.';
+                    return false;
+                }
+
+                if (username.length < 3) {
+                    errorMessage.innerHTML = 'Username must be at least 3 characters long.';
+                    return false;
+                }
+
+                if (password.length < 4) {
+                    errorMessage.innerHTML = 'Password must be at least 8 characters long.';
+                    return false;
+                }
+
+                return true;
+            }
+        </script>
 
     </body>
 </html>

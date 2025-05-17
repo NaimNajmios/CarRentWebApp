@@ -26,7 +26,7 @@
                 <div id="error-message" class="text-center mb-6 text-red-500"></div>
 
                 <!-- Register Form -->
-                <form action="Register" method="POST" class="space-y-6">
+                <form id="registerForm" action="Register" method="POST" class="space-y-6" onsubmit="return validateForm()">
                     <div>
                         <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
                         <input type="text" id="username" name="username" placeholder="Enter your username"
@@ -66,9 +66,9 @@
 
                     <div>
                         <label for="address" class="block text-sm font-medium text-gray-700">Address</label>
-                        <input type="text" id="address" name="address" placeholder="Enter your address"
+                        <textarea id="address" name="address" placeholder="Enter your address"
                             class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            required>
+                            required rows="3"></textarea>
                     </div>
 
                     <div>
@@ -94,6 +94,60 @@
 
     <!-- JavaScript Dependencies -->
     <%@ include file="../include/credential-js.html" %>
+
+    <script>
+        function validateForm() {
+            var username = document.getElementById('username').value;
+            var password = document.getElementById('password').value;
+            var repeatPassword = document.getElementById('repeat-password').value;
+            var email = document.getElementById('email').value;
+            var fullName = document.getElementById('full-name').value;
+            var address = document.getElementById('address').value;
+            var phoneNumber = document.getElementById('phone-number').value;
+
+            var errorMessage = document.getElementById('error-message');
+            errorMessage.innerHTML = '';
+
+            if (username.length < 3) {
+                errorMessage.innerHTML = 'Username must be at least 3 characters long.';
+                return false;
+            }
+
+            if (password.length < 8) {
+                errorMessage.innerHTML = 'Password must be at least 8 characters long.';
+                return false;
+            }
+
+            if (password !== repeatPassword) {
+                errorMessage.innerHTML = 'Passwords do not match.';
+                return false;
+            }
+
+            var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                errorMessage.innerHTML = 'Please enter a valid email address.';
+                return false;
+            }
+
+            if (fullName.trim() === '') {
+                errorMessage.innerHTML = 'Full name is required.';
+                return false;
+            }
+
+            if (address.trim() === '') {
+                errorMessage.innerHTML = 'Address is required.';
+                return false;
+            }
+
+            var phoneRegex = /^\d{10}$/;
+            if (!phoneRegex.test(phoneNumber)) {
+                errorMessage.innerHTML = 'Please enter a valid 10-digit phone number.';
+                return false;
+            }
+
+            return true;
+        }
+    </script>
 
 </body>
 

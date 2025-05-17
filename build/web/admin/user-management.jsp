@@ -20,6 +20,12 @@
         <!-- Fixed Paths for CSS -->
         <%@ include file="../include/admin-styling.html" %>
 
+        <style>
+            .search-bar {
+                margin-bottom: 20px;
+            }
+        </style>
+
     </head>
     <body data-spy="scroll" data-target=".site-navbar-target" data-offset="300">
         <div class="site-wrap" id="user-section">
@@ -60,7 +66,10 @@
 
                                 <div class="tab-content" id="userTabsContent">
                                     <div class="tab-pane fade show active" id="client-users" role="tabpanel" aria-labelledby="client-tab">
-                                        <table class="table table-bordered mt-3">
+                                        <div class="search-bar">
+                                            <input type="text" id="clientSearchInput" class="form-control" placeholder="Search clients...">
+                                        </div>
+                                        <table class="table table-bordered mt-3" id="clientTable">
                                             <thead>
                                                 <tr>
                                                     <th>User ID</th>
@@ -109,7 +118,10 @@
 
                                     <!-- Admin Users Tab -->
                                     <div class="tab-pane fade" id="admin-users" role="tabpanel" aria-labelledby="admin-tab">
-                                        <table class="table table-bordered mt-3">
+                                        <div class="search-bar">
+                                            <input type="text" id="adminSearchInput" class="form-control" placeholder="Search admins...">
+                                        </div>
+                                        <table class="table table-bordered mt-3" id="adminTable">
                                             <thead>
                                                 <tr>
                                                     <th>Admin ID</th>
@@ -206,5 +218,22 @@
         </div>
         <!-- Fixed Paths for JS -->
         <%@ include file="../include/admin-js.html" %>
+        <script>
+            $(document).ready(function() {
+                $("#clientSearchInput").on("keyup", function() {
+                    var value = $(this).val().toLowerCase();
+                    $("#clientTable tbody tr").filter(function() {
+                        $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                    });
+                });
+
+                $("#adminSearchInput").on("keyup", function() {
+                    var value = $(this).val().toLowerCase();
+                    $("#adminTable tbody tr").filter(function() {
+                        $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                    });
+                });
+            });
+        </script>
     </body>
 </html>

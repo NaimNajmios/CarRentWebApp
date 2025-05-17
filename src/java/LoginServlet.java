@@ -78,7 +78,7 @@ public class LoginServlet extends HttpServlet {
 
         } else {
             LOGGER.log(Level.WARNING, "Login failed for username: {0}", username);
-            response.sendRedirect("index.jsp?error=invalid");
+            response.sendRedirect("index.jsp?div_message=invalid");
             LOGGER.log(Level.INFO, "Redirecting to login page with error.");
         }
     }

@@ -22,10 +22,7 @@
 
     // Retrieve user data 
     client = dbo.getClientDataByClientID(clientid);
-
-    // Log the client data
-    System.out.println("Client Data: " + client);
-
+    
     // Check if the user exists
     if (client == null) {
         // User not found
